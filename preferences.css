@@ -40,3 +40,15 @@
  .pref-controls{position:absolute;right:0;top:5px;margin:0;padding:0;border:0}
  .pref-controls button{min-width:40px;min-height:40px}
 }
+
+/* Minimal document breadcrumbs; do not cover the immersive camera viewport. */
+.breadcrumbs{display:block;margin:0 0 17px;padding:0;background:transparent;font-size:12px;line-height:1.45}
+.breadcrumbs ol{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0;padding:0;list-style:none}
+.breadcrumbs li{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.breadcrumbs .breadcrumbs-separator{color:var(--muted,#82899a);opacity:.62}
+.breadcrumbs a{padding:0;border:0;border-radius:0;background:transparent;color:var(--muted,#82899a);font-size:inherit;text-decoration:none}
+.breadcrumbs a:hover,.breadcrumbs a:focus-visible{background:transparent;color:var(--text,#f3f4f7);text-decoration:underline;text-underline-offset:3px}
+.breadcrumbs [aria-current="page"]{color:var(--text,#f3f4f7);font-weight:600}
+[data-theme="light"] .breadcrumbs a{color:var(--muted,#555d70);background:transparent}
+[data-theme="light"] .breadcrumbs a:hover,[data-theme="light"] .breadcrumbs a:focus-visible{color:var(--text,#1c2030);background:transparent}
+@media(max-width:600px){.breadcrumbs{margin-bottom:12px}.breadcrumbs ol,.breadcrumbs li{gap:6px}}
