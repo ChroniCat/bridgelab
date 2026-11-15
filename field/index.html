@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0c0d10"><title data-zh="现场巡检 · BridgeLab">Field inspection · BridgeLab</title>
 <script src="../preferences.js"></script><link rel="icon" href="../icon.svg"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./field.css">
-<script type="module" src="./live.js?v=wb4"></script></head>
+<script type="module" src="./live.js?v=wb5"></script></head>
 <body><header class="site-head"><div class="wrap nav"><a href="../" class="wordmark"><img src="../icon.svg" width="28" height="28" alt="">BridgeLab</a>
 <nav aria-label="Primary" data-zh-aria="主导航"><a href="./" aria-current="page" data-zh="现场巡检">Field</a><a href="./review.html" data-zh="巡检记录">Records</a><a id="validation-link" href="./validation.html" data-zh="盲测">Blind test</a><div class="pref-controls" data-preferences></div></nav></div></header>
 <main class="wrap field-main">
@@ -11,11 +11,11 @@
 <div class="stage-top"><span class="state" id="state" role="status"></span><span class="kind" id="source-type"></span></div>
 <div class="stage-center" id="empty"><img src="../icon.svg" width="40" height="40" alt=""><div id="ready-message"></div></div>
 <div class="stage-bottom"><b id="section-name"></b><span id="reading"></span></div></section>
-<div class="run-controls"><div class="row"><button type="button" id="start" class="button primary" data-zh="开启相机">Open camera</button><button type="button" id="finish" class="button" hidden data-zh="结束并保存">Finish and save</button><button type="button" id="demo" class="button" data-zh="模拟走查">Simulate a walk</button>
+<div class="run-controls"><div class="row"><a id="record-field" class="button primary" href="../target/mobile.html?site=waibaidu&amp;v=wb5" hidden data-zh="拍摄巡检视频">Record a field video</a><button type="button" id="start" class="button" data-zh="开启相机">Open camera</button><button type="button" id="finish" class="button" hidden data-zh="结束并保存">Finish and save</button><button type="button" id="demo" class="button" data-zh="模拟走查">Simulate a walk</button>
 <label class="button file-action" id="video-label"><span data-zh="导入走查视频">Open walk video</span><input id="video-file" type="file" accept="video/*"></label>
 <a id="last-run" class="button" hidden data-zh="复核本次巡检">Review this run</a><button class="button" id="export-run" hidden data-zh="导出本次巡检">Export this run</button></div>
 <span id="count"></span></div>
-<div class="field-ar-link"><a id="tabletop-link" href="../target/mobile.html?v=wb4" data-zh="用手机拍电脑上的实验？打开桌面测量相机 →">Filming the desktop experiment? Open its camera →</a></div>
+<div class="field-ar-link"><a id="tabletop-link" href="../target/mobile.html?v=wb5" data-zh="用手机拍电脑上的实验？打开桌面测量相机 →">Filming the desktop experiment? Open its camera →</a></div>
 <details id="field-model-box" class="setup" hidden><summary id="field-model-status"></summary>
 <div class="setup-content"><div id="model-preview-row" hidden><canvas id="field-preview-canvas" aria-label="Rotate the 3D bridge model" data-zh-aria="拖动旋转三维桥模"></canvas></div>
 <label class="button file-action"><span data-zh="导入模型 JSON">Import model JSON</span><input id="field-model-file" type="file" accept=".json,application/json"></label></div></details>

@@ -97,12 +97,17 @@ function gpuMesh(canvas,primitives) {
     const draws = primitives.map(p => {
       const wide = p.indices instanceof Uint32Array;
       if (wide && !gl.getExtension('OES_element_index_uint')) throw new Error('32-bit index buffers unavailable');
-      return {position:upload(p.positions,gl.ARRAY_BUFFER), normal:upload(p.normals,gl.ARRAY_BUFFER),
+      return {positions:p.positions, position:upload(p.positions,gl.ARRAY_BUFFER), normal:upload(p.normals,gl.ARRAY_BUFFER),
         index:upload(p.indices,gl.ELEMENT_ARRAY_BUFFER), count:p.indices.length,
         type:wide?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT, color:p.color};
     });
     gl.enable(gl.DEPTH_TEST);
-    return {destroy, render(matrix) {
+    return {destroy, updatePositions() {
+      for (const item of draws) {
+        gl.bindBuffer(gl.ARRAY_BUFFER,item.position);
+        gl.bufferSubData(gl.ARRAY_BUFFER,0,item.positions);
+      }
+    }, render(matrix) {
       if (gl.isContextLost()) return false;
       gl.viewport(0,0,canvas.width,canvas.height);
       gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -118,6 +123,26 @@ function gpuMesh(canvas,primitives) {
   } catch (error) { destroy(); throw error; }
 }
 
+
+// The desktop walk changes vertex elevations without altering the stored GLB.
+export async function loadWalkMesh(surface, buildPrimitives) {
+  meshRequest ??= readMesh().catch(error => { meshRequest=undefined; throw error; });
+  const primitives = buildPrimitives(await meshRequest);
+  let mesh;
+  try { mesh = gpuMesh(surface,primitives); } catch { mesh = canvasMesh(primitives); }
+  return {
+    get source() { return mesh.source || surface; },
+    get mode() { return mesh.source ? 'software' : 'webgl'; },
+    updatePositions() { mesh.updatePositions?.(); },
+    render(matrix) {
+      if (mesh.render(matrix,surface.width,surface.height)) return true;
+      mesh.destroy();
+      mesh = canvasMesh(primitives);
+      return mesh.render(matrix,surface.width,surface.height);
+    },
+    destroy() { mesh.destroy(); }
+  };
+}
 
 // Draw a solid version immediately. Loading the high-detail file upgrades the
 // same canvas and projection; a failed request leaves the structural preview available.
