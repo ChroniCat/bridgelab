@@ -43,6 +43,12 @@ function textured(data){
  }
  return mxx-mx*mx/361>361*36&&a*c-b*b>.004*(a+c)**2;
 }
+// Raw image descriptors for image-plane field baselines, which have no 3D pose.
+export function sampleAppearance(frame, id, x, y) {
+ const patch=centerPatch(frame,{x,y});
+ if(!patch||!textured(patch))return null;
+ return {id,x,y,patch:btoa(String.fromCharCode(...patch))};
+}
 // Returns null unless the independent check and repeatable image texture support a reusable view.
 // One record is one optical viewpoint; only small local patches leave the device if saved.
 export function captureReference({frame,model,K,tracks,sectionId='all'}={}){
@@ -175,10 +181,58 @@ export function registerFrame({image,frame,model,K,reference,sectionId=reference
  if(reference.format!=='bridgelab-appearance-v1'||reference.modelId!==model.id||reference.revision!==model.revision||reference.sectionId!==sectionId)return fail('reference_scope');
  if(!validRaster(reference)||!validRaster(frame)||frame.data?.length!==frame.width*frame.height||!Array.isArray(reference.points)||reference.points.length<6||reference.points.length>maxPoints)return fail('invalid_reference');
  const ids=new Set(reference.points.map(p=>p?.id));if(ids.size!==reference.points.length||![...ids].every(id=>nodes.some(n=>n.id===id)))return fail('reference_scope');
- const patterns=compiled(reference);if(patterns.length<6)return fail('poor_texture');
- const index=proposals(frame),w=frame.width,offsets=[[1,0],[.9,0],[1.1,0],[1,.13],[1,-.13]].map(([s,r])=>viewOffsets(w,s,r));
- const observations=new Map();
- for(const p of patterns){const match=matchPattern(frame,index,p,offsets);if(match)observations.set(p.id,match)}
+ const observations=matchAppearance(frame,reference);
  const result=audited(observations,nodes,K);
  return result?{ok:true,...result,sectionId,method:'appearance',reason:''}:fail('unverified_appearance');
+}
+
+// Recover independently observed image coordinates. Geometry and point roles
+// are checked by the caller using the appropriate 3D or planar reference.
+export function matchAppearance(frame,reference) {
+ const observations=new Map();
+ if(!validRaster(frame)||!validRaster(reference)||!Array.isArray(reference.points)
+   ||reference.points.length<6||reference.points.length>maxPoints)return observations;
+ const patterns=compiled(reference);
+ if(patterns.length<6)return observations;
+ const index=proposals(frame),w=frame.width;
+ const offsets=[[1,0],[.9,0],[1.1,0],[1,.13],[1,-.13]].map(([s,r])=>viewOffsets(w,s,r));
+ for(const pattern of patterns){
+   const match=matchPattern(frame,index,pattern,offsets);
+   if(match)observations.set(pattern.id,match);
+ }
+ return observations;
+}
+
+// Test a proposed field landmark against the rest of its actual image.
+// This rejects repeated bolts and tiles before the operator saves the view.
+export function uniqueLandmark(frame,x,y){
+ const record=sampleAppearance(frame,'candidate',x,y);
+ if(!record)return false;
+ const reference={width:frame.width,height:frame.height,points:[record]};
+ const pattern=compiled(reference)[0];if(!pattern)return false;
+ const offsets=[[1,0],[.9,0],[1.1,0],[1,.13],[1,-.13]].map(([s,r])=>viewOffsets(frame.width,s,r));
+ const match=matchPattern(frame,proposals(frame),pattern,offsets);
+ return !!match&&Math.hypot(match.x-x,match.y-y)<=1.4;
+}
+
+// Recover an unmatched landmark in a bounded neighborhood predicted by other
+// observed controls. The returned point is a unique image-correlation peak.
+export function matchAppearanceNear(frame,reference,id,center,scale=1,angle=0,range=12) {
+ const pattern=compiled(reference).find(p=>p.id===id);
+ if(!pattern||!Array.isArray(center)||!center.every(Number.isFinite)||
+    !Number.isFinite(scale)||scale<.65||scale>1.5||!Number.isFinite(angle))return null;
+ const w=frame.width,h=frame.height,limit=Math.ceil(12*scale)+3;
+ const offsets=viewOffsets(w,scale,angle),cx=Math.round(center[0]),cy=Math.round(center[1]);
+ let bx=0,by=0,best=-2;
+ const scores=[];
+ for(let y=Math.max(limit,cy-range);y<=Math.min(h-limit-1,cy+range);y++){
+   for(let x=Math.max(limit,cx-range);x<=Math.min(w-limit-1,cx+range);x++){
+     const score=correlate(frame,y*w+x,offsets,pattern);
+     scores.push([x,y,score]);
+     if(score>best){bx=x;by=y;best=score;}
+   }
+ }
+ if(best<.80)return null;
+ if(scores.some(([x,y,s])=>Math.max(Math.abs(x-bx),Math.abs(y-by))>3&&best-s<.065))return null;
+ return {x:bx+pattern.x-Math.round(pattern.x),y:by+pattern.y-Math.round(pattern.y),score:best};
 }

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c0d10"><title data-zh="现场巡检 · BridgeLab">Field inspection · BridgeLab</title>
+<script src="../preferences.js"></script><link rel="icon" href="../icon.svg"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./field.css">
+<script type="module" src="./live.js"></script></head>
+<body><header class="site-head"><div class="wrap nav"><a href="../" class="wordmark"><img src="../icon.svg" width="28" height="28" alt="">BridgeLab</a>
+<nav aria-label="Primary" data-zh-aria="主导航"><a href="./" aria-current="page" data-zh="现场巡检">Field</a><a href="./review.html" data-zh="巡检记录">Records</a><a id="validation-link" href="./validation.html" data-zh="盲测">Blind test</a><div class="pref-controls" data-preferences></div></nav></div></header>
+<main class="wrap field-main">
+<div class="field-heading"><div><a class="back" href="../" data-zh="‹ 项目首页">‹ Overview</a><h1 data-zh="现场巡检">Field inspection</h1></div><label class="site-select"><span class="sr" data-zh="选择桥梁">Choose bridge</span><select id="bridge"></select></label></div>
+<section class="field-stage" aria-label="Inspection camera" data-zh-aria="巡检相机"><video id="video" muted playsinline hidden></video><canvas id="live-view" width="480" height="270" aria-label="Registered camera view" data-zh-aria="已配准的相机画面"></canvas>
+<div class="stage-top"><span class="state" id="state" role="status"></span><span class="kind" id="source-type"></span></div>
+<div class="stage-center" id="empty"><img src="../icon.svg" width="40" height="40" alt=""><div id="ready-message"></div></div>
+<div class="stage-bottom"><b id="section-name"></b><span id="reading"></span></div></section>
+<div class="run-controls"><div class="row"><button type="button" id="start" class="button primary" data-zh="开启相机">Open camera</button><button type="button" id="finish" class="button" hidden data-zh="结束并保存">Finish and save</button><button type="button" id="demo" class="button" data-zh="模拟走查">Simulate a walk</button>
+<label class="button file-action" id="video-label"><span data-zh="导入走查视频">Open walk video</span><input id="video-file" type="file" accept="video/*"></label>
+<a id="last-run" class="button" hidden data-zh="复核本次巡检">Review this run</a><button class="button" id="export-run" hidden data-zh="导出本次巡检">Export this run</button></div>
+<span id="count"></span></div>
+<p class="feedback" id="notice" role="status"></p><p class="feedback" id="save-status" role="status"></p>
+<details id="setup" class="setup"><summary data-zh="桥段基准">Section baselines</summary>
+<div class="setup-content"><div class="row wrap-row"><label class="file-action button"><span data-zh="选取基准照片">Open reference photo</span><input id="photo" type="file" accept="image/*"></label>
+<button id="freeze" type="button" class="button" data-zh="取当前相机画面">Use camera frame</button></div>
+<div id="baseline-form" hidden><div class="baseline-fields"><label><span data-zh="构件或桥段编号">Member or section ID</span><input id="section-input" maxlength="60" autocomplete="off"></label>
+<label><span data-zh="基准类型">Reference type</span><select id="picker-mode">
+<option value="auto" data-zh="点选目标，自动取参照">Tap target · automatic references</option>
+<option value="manual" data-zh="手动选择同平面标志">Choose coplanar landmarks</option>
+<option value="metric" data-zh="已实测的矩形平面">Measured rectangular plane</option></select></label></div>
+<div class="baseline-fields" id="scale" hidden><label><span data-zh="矩形宽（毫米）">Rectangle width (mm)</span><input id="width-mm" type="number" min=".01" step="any"></label><label><span data-zh="矩形高（毫米）">Rectangle height (mm)</span><input id="height-mm" type="number" min=".01" step="any"></label><label><span data-zh="复查阈值（毫米）">Review threshold (mm)</span><input id="limit-mm" type="number" value="5" min=".01" step="any"></label></div>
+<p id="pick-prompt"></p><canvas id="picker" width="480" height="270" tabindex="0" aria-label="Select landmarks on the reference image" data-zh-aria="在基准照片上选择标志点"></canvas>
+<div id="neighbor-row" class="baseline-fields" hidden><label><span data-zh="左侧两点与哪一段的右侧两点共用？">Which section shares both left corners with this one?</span><select id="neighbor"></select></label></div>
+<div class="row wrap-row"><button id="save-section" type="button" class="button primary" data-zh="保存基准">Save reference</button><button id="undo" type="button" class="button" data-zh="撤销选点">Undo pick</button><button id="cancel" type="button" class="button" data-zh="取消">Cancel</button></div>
+</div><div id="sections-list"></div><button id="new-site" type="button" class="text-action" data-zh="新建桥梁项目">New bridge project</button>
+<form id="site-form" class="row wrap-row" hidden><input id="site-name" required maxlength="80" aria-label="Bridge name" data-zh-aria="桥梁名称"><button class="button" data-zh="创建">Create</button></form></div></details>
+<noscript>Enable JavaScript / 请启用 JavaScript</noscript></main></body></html>

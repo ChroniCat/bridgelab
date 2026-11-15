@@ -78,6 +78,7 @@ function renderStatus(){
 }
 document.addEventListener('bridgelab:preferences',()=>{renderStatus();viewer?.draw?.()});
 async function load(){
+ document.getElementById("field-entry").href="./field/?bridge="+encodeURIComponent(picker.value);
  const seq=++sequence;reset.disabled=true;activeLength=null;failed=false;renderStatus();
  try{
   const response=await fetch(new URL('./models/'+encodeURIComponent(picker.value)+'.json',import.meta.url));

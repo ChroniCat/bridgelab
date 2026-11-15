@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0c0d10">
+<title data-zh="巡检记录 · BridgeLab">Field records · BridgeLab</title><script src="../preferences.js"></script><link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./review.css"><script type="module" src="./review.js"></script>
+</head><body>
+<a class="skip" href="#main" data-zh="跳到内容">Skip to content</a>
+<header class="site-head"><div class="wrap nav"><a href="../" class="wordmark"><img src="../icon.svg" width="28" height="28" alt="">BridgeLab</a><nav aria-label="Primary" data-zh-aria="主导航"><a id="field-link" href="./" data-zh="现场巡检">Field inspection</a><a href="./review.html" aria-current="page" data-zh="记录">Records</a><div class="pref-controls" data-preferences></div></nav></div></header>
+<main id="main" class="wrap review">
+<header class="intro review-head"><h1 data-zh="巡检记录">Field records</h1><div class="files"><button id="import" type="button" data-zh="导入记录">Import file</button><input id="file" type="file" accept=".json,application/json" hidden><button type="button" id="export" hidden data-zh="导出记录">Export file</button></div></header>
+<p class="notice" id="notice" role="status" aria-live="polite"></p>
+<label id="switcher" hidden><span class="sr-only" data-zh="选择记录或基准">Choose a run or baseline</span><select id="record"></select></label>
+<div id="content" aria-busy="true"></div>
+</main>
+</body></html>
