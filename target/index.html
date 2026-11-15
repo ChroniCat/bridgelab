@@ -1,15 +1,19 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0c0f"><title data-zh="屏幕测试板 · BridgeLab">Screen target · BridgeLab</title>
-<script src="../preferences.js"></script>
-<link rel="icon" href="../icon.svg" type="image/svg+xml"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="./target.css"><link rel="stylesheet" href="../preferences.css">
-<script defer src="../lab/board-vision.js"></script><script defer src="./target.js"></script>
-</head>
+<script src="../preferences.js"></script><link rel="icon" href="../icon.svg" type="image/svg+xml"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./target.css">
+<script defer src="../lab/board-vision.js"></script><script defer src="./target.js"></script></head>
 <body><header class="site-head"><div class="wrap nav"><a href="../" class="wordmark"><img src="../icon.svg" alt="" width="28" height="28">BridgeLab</a>
 <nav aria-label="Primary" data-zh-aria="主导航"><a href="../" data-zh="巡检">Inspection</a><a href="./" aria-current="page" data-zh="屏幕测试板">Screen target</a><div class="pref-controls" data-preferences></div></nav></div></header>
-<main class="wrap"><header class="board-head"><h1 data-zh="屏幕测试板">Screen target</h1><a class="button" id="print-board" href="../lab/BridgeLab-Board.pdf" data-zh="打印 A4 测试板">Print A4 board</a></header>
-<canvas width="1040" height="740" aria-label="A six-marker board with a movable target on the left of the centre mark" data-zh-aria="六个编码标记组成的测试板，中央标记左侧是可移动目标。"></canvas>
-<div class="board-controls"><p><span data-zh="用手机打开">On your phone, open the </span><a href="../ar/?mode=camera" data-zh="相机实测">live camera test</a><span data-zh="，让整块测试板进入画面。"> and frame the entire board.</span></p>
-<button type="button" id="move-target" class="button primary" aria-pressed="false">Move target</button></div></main></body></html>
+<main class="wrap"><header class="board-head"><div><h1 data-zh="屏幕测试板">Screen target</h1><p data-zh="让手机的 AR 相机看见六个标记，三维桥模会出现在手机画面里。">Frame all six marks with the phone’s AR camera to see the 3D bridge on the phone.</p></div>
+<button type="button" class="button primary" id="pair-open" aria-haspopup="dialog" data-zh="连接手机">Connect phone</button></header>
+<section id="board-view" aria-label="Test board" data-zh-aria="测试板">
+<canvas id="board" width="1040" height="740" aria-label="A six-marker board with a movable target left of centre" data-zh-aria="六个编码标记，中央偏左的目标可移动"></canvas>
+<div class="board-controls"><label class="chooser"><span class="sr" data-zh="手机模型">Phone model</span><select id="pair-model" aria-label="Phone model" data-zh-aria="手机模型"><option value="waibaidu" data-zh="外白渡桥">Waibaidu Bridge</option><option value="training-span" data-zh="教学桁架桥">Teaching truss</option></select></label>
+<div class="actions"><button type="button" id="move-target" class="button" aria-pressed="false">Move target</button><button type="button" id="expand-board" class="button" aria-pressed="false">Expand board</button></div></div></section>
+<footer class="board-footer"><a id="phone-camera" href="../ar/?mode=camera&amp;bridge=waibaidu" data-zh="用本机打开 AR 相机">Open AR camera on this device</a><a id="print-board" href="../lab/BridgeLab-Board.pdf" data-zh="打印 A4 测试板">Print A4 board</a></footer>
+<dialog id="pair-dialog" aria-labelledby="pair-title"><h2 id="pair-title" data-zh="连接手机">Connect phone</h2><p id="pair-instruction"></p>
+<img id="pair-code" width="224" height="224" alt="QR code for the mobile AR camera" data-zh-title="手机 AR 相机二维码" title="Mobile AR camera QR code" hidden>
+<label class="sr" for="pair-url" data-zh="手机相机链接">Phone camera link</label><input type="url" id="pair-url" readonly>
+<div class="actions"><button type="button" class="button" id="copy-link">Copy link</button><button type="button" class="button primary" id="pair-close" data-zh="显示测试板">Show board</button></div>
+</dialog></main></body></html>

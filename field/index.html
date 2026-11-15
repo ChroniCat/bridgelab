@@ -15,6 +15,10 @@
 <label class="button file-action" id="video-label"><span data-zh="导入走查视频">Open walk video</span><input id="video-file" type="file" accept="video/*"></label>
 <a id="last-run" class="button" hidden data-zh="复核本次巡检">Review this run</a><button class="button" id="export-run" hidden data-zh="导出本次巡检">Export this run</button></div>
 <span id="count"></span></div>
+<div class="field-ar-link"><a id="tabletop-link" href="../ar/?mode=camera&amp;bridge=waibaidu" data-zh="对着另一台设备的测试板？打开测试板 AR →">Using a test board on another device? Open board AR →</a></div>
+<details id="field-model-box" class="setup" hidden><summary id="field-model-status"></summary>
+<div class="setup-content"><div id="model-preview-row" hidden><canvas id="field-preview-canvas" aria-label="Rotate the 3D bridge model" data-zh-aria="拖动旋转三维桥模"></canvas></div>
+<label class="button file-action"><span data-zh="导入模型 JSON">Import model JSON</span><input id="field-model-file" type="file" accept=".json,application/json"></label></div></details>
 <p class="feedback" id="notice" role="status"></p><p class="feedback" id="save-status" role="status"></p>
 <details id="setup" class="setup"><summary data-zh="桥段基准">Section baselines</summary>
 <div class="setup-content"><div class="row wrap-row"><label class="file-action button"><span data-zh="选取基准照片">Open reference photo</span><input id="photo" type="file" accept="image/*"></label>
@@ -22,8 +26,10 @@
 <div id="baseline-form" hidden><div class="baseline-fields"><label><span data-zh="构件或桥段编号">Member or section ID</span><input id="section-input" maxlength="60" autocomplete="off"></label>
 <label><span data-zh="基准类型">Reference type</span><select id="picker-mode">
 <option value="auto" data-zh="点选目标，自动取参照">Tap target · automatic references</option>
+<option value="model" disabled data-zh="关联三维桥段">Link a 3D model panel</option>
 <option value="manual" data-zh="手动选择同平面标志">Choose coplanar landmarks</option>
 <option value="metric" data-zh="已实测的矩形平面">Measured rectangular plane</option></select></label></div>
+<div class="baseline-fields" id="model-binding" hidden><label><span data-zh="模型片区">Model panel</span><select id="model-panel"></select></label><label class="model-direction"><input type="checkbox" id="model-reverse"> <span data-zh="反向观察（桥梁里程从右到左）">Reverse view (station increases right to left)</span></label></div>
 <div class="baseline-fields" id="scale" hidden><label><span data-zh="矩形宽（毫米）">Rectangle width (mm)</span><input id="width-mm" type="number" min=".01" step="any"></label><label><span data-zh="矩形高（毫米）">Rectangle height (mm)</span><input id="height-mm" type="number" min=".01" step="any"></label><label><span data-zh="复查阈值（毫米）">Review threshold (mm)</span><input id="limit-mm" type="number" value="5" min=".01" step="any"></label></div>
 <p id="pick-prompt"></p><canvas id="picker" width="480" height="270" tabindex="0" aria-label="Select landmarks on the reference image" data-zh-aria="在基准照片上选择标志点"></canvas>
 <div id="neighbor-row" class="baseline-fields" hidden><label><span data-zh="左侧两点与哪一段的右侧两点共用？">Which section shares both left corners with this one?</span><select id="neighbor"></select></label></div>

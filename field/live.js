@@ -2,12 +2,14 @@ import {createTracker} from './tracker.js';
 import {measurePlane,captureTrialFrame,fieldCondition,qualityGate,trialStatus} from './metric.js';
 import {createRun,observeRun,recordIncident,completeRun,saveRun,listSites,getSite,saveSite,exportRunFile} from './storage.js';
 import {manageBaselines,workingSize,referenceFrame} from './baselines.js';
+import {fieldModels,projectFieldModel,drawFieldModel} from './model-overlay.js';
 import {makeWalk,demoId} from './walk.js';
 
 const el=id=>document.getElementById(id),text=(en,zh)=>window.BridgePrefs.text(en,zh);
 const video=el('video'),view=el('live-view'),display=view.getContext('2d');
 const raw=document.createElement('canvas'),ctx=raw.getContext('2d',{willReadFrequently:true});
 const tracker=createTracker(),params=new URLSearchParams(location.search);
+let schematicVisible=false;
 let site,sites=[],active=null,pending=false,last=null,cameraStream=null,fileUrl=null;
 let notice=['',''],status=['Ready','就绪'],tone='',savedMessage=['',''],reading='',sectionName='',lastHit=null,ready=false,raf=0,epoch=0,hasFrame=false;
 const initialId=params.get('bridge')||'waibaidu';
@@ -28,10 +30,12 @@ function render(){
   el('video-label').hidden=!!active;el('video-file').disabled=pending||!ready;el('start').disabled=pending||!ready;el('bridge').disabled=!!active||pending||!ready;
   const synthetic=active?.source==='synthetic',blind=active?.blind;
   el('source-type').textContent=active?(synthetic?text('Synthetic','合成演示'):active.source==='video'?text('Recorded video','实拍视频'):text('Live camera','实时相机')):'';
-  el('section-name').textContent=sectionName;el('reading').textContent=reading;
+  el('section-name').textContent=sectionName+(schematicVisible?text(' · 3D overlay',' · 三维示意叠加'):'');el('reading').textContent=reading;
   el('count').textContent=active?.run&&!blind?text('Verified frames ','已核验帧 ')+active.run.validFrames+' / '+active.run.processedFrames:'';
   el('setup').hidden=!!active&&(active.source!=='camera'||!!active.run||blind);
-  if(site){const s=active?.blind?site.sections.find(b=>b.id===active.trial?.sectionId):lastHit?.baseline||site.sections.find(b=>b.id===params.get('section'))||site.sections.find(b=>b.calibration)||site.sections[0];
+  el('field-model-box').hidden=!site||!!active;
+  el('tabletop-link').hidden=!!active&&!active.preview;
+  if(site){el('tabletop-link').href='../ar/?mode=camera&bridge='+(defaultSites.some(s=>s.id===site.id)?site.id:'waibaidu');const s=active?.blind?site.sections.find(b=>b.id===active.trial?.sectionId):lastHit?.baseline||site.sections.find(b=>b.id===params.get('section'))||site.sections.find(b=>b.calibration)||site.sections[0];
     const p=new URLSearchParams({bridge:site.id});if(s)p.set('section',s.id);
     el('validation-link').href='./validation.html?'+p;
   }
@@ -40,7 +44,7 @@ function render(){
 function syncChooser(){
   const selected=site.id;el('bridge').replaceChildren();
   for(const s of [...defaultSites.filter(s=>!sites.some(x=>x.id===s.id)),...sites].filter(s=>s.id!==demoId))el('bridge').add(new Option(chosenName(s),s.id));
-  el('bridge').value=selected;editor.list();
+  el('bridge').value=selected;models.select(site);editor.list();
 }
 async function useSite(stored){
   if(active)await stop();
@@ -48,7 +52,8 @@ async function useSite(stored){
   const url=new URL(location.href);url.searchParams.set('bridge',site.id);url.searchParams.delete('section');history.replaceState(null,'',url);
   lastHit=null;syncChooser();render();
 }
-const editor=manageBaselines({getSite:()=>site,onSite:useSite,cameraFrame:()=>active?.preview&&hasFrame?referenceFrame(raw):null,openPreview:()=>start('camera',null,true),notify});
+const models=fieldModels({updated:()=>{editor.renderForm();render()}});
+const editor=manageBaselines({models,getSite:()=>site,onSite:useSite,cameraFrame:()=>active?.preview&&hasFrame?referenceFrame(raw):null,openPreview:()=>start('camera',null,true),notify});
 el('bridge').onchange=()=>{editor.cancel();lastHit=null;const id=el('bridge').value;site=sites.find(s=>s.id===id)||defaultSites.find(s=>s.id===id);const u=new URL(location.href);u.searchParams.set('bridge',site.id);u.searchParams.delete('section');history.replaceState(null,'',u);syncChooser();notify('','');render()};
 function stopMedia(){
   if(cameraStream)cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;video.pause();video.srcObject=null;
@@ -63,7 +68,7 @@ function writeCheckpoint(a){
 }
 async function stop(why=null){
   const a=active;if(!a)return;epoch++;active=null;cancelAnimationFrame(raf);stopMedia();
-  hasFrame=false;display.clearRect(0,0,view.width,view.height);tracker.reset();
+  hasFrame=false;schematicVisible=false;display.clearRect(0,0,view.width,view.height);tracker.reset();
   sectionName=reading='';lastHit=null;setState('Finished','已结束');if(why)notify(...why);
   if(a.run){
     completeRun(a.run,a.elapsed);last={run:a.run,site:a.site,saved:false};
@@ -145,6 +150,7 @@ function measure(a,hit){
   return measurePlane({baseline:hit.baseline.points,observed:hit.observed,...hit.baseline.calibration});
 }
 function processFrame(a,stamp){
+  schematicVisible=false;
   const image=ctx.getImageData(0,0,raw.width,raw.height);
   display.drawImage(raw,0,0);
   if(a.preview){setState('Camera ready','相机已就绪');return}
@@ -183,7 +189,12 @@ function processFrame(a,stamp){
   const gate=m?.ok&&condition?qualityGate(m,condition,thresholdMm):null;
   const metric=!!gate?.eligible,kind=metric?'metric':'pixel',above=metric?gate.exceeds:hit.offsetPx>7;
   a.alerts.delete(hit.sectionId+'|'+(metric?'pixel':'metric'));
-  const alert=sustained(a,hit.sectionId,kind,above,t);drawOverlay(hit,alert.active);
+  const alert=sustained(a,hit.sectionId,kind,above,t);
+  if(a.source!=='synthetic'&&models.model&&hit.baseline.modelBinding){
+    const projection=projectFieldModel(models.model,hit.baseline.modelBinding,hit,raw.width,raw.height);
+    if(projection){drawFieldModel(display,models.model,projection);schematicVisible=true}
+  }
+  drawOverlay(hit,alert.active);
   if(alert.active){if(metric)setState('Planar shift for review','平面位移待复核','alert');else setState('Image shift for review','图像偏移待复核','alert')}
   else setState('Tracking','跟踪中','good');
   reading=metric?m.magnitudeMm.toFixed(1)+' mm · P95 '+gate.error95Mm.toFixed(1)+' mm':hit.offsetPx.toFixed(1)+' px';
@@ -207,7 +218,7 @@ function tick(now){
       else{const [w,h]=workingSize(video.videoWidth,video.videoHeight);if(raw.width!==w||raw.height!==h){raw.width=view.width=w;raw.height=view.height=h;tracker.reset()}ctx.drawImage(video,0,0,raw.width,raw.height);a.lastVideo=video.currentTime}
       hasFrame=true;a.lastTime=a.elapsed;a.lastFrameAt=now;a.stalled=false;processFrame(a,a.elapsed);render();
     }else if(!document.hidden&&a.source!=='synthetic'&&!a.stalled&&now-a.lastFrameAt>1500){
-      a.stalled=true;tracker.reset();a.alerts.clear();sectionName=reading='';lastHit=null;setState('Waiting for video','等待新画面');display.clearRect(0,0,view.width,view.height);
+      a.stalled=true;schematicVisible=false;tracker.reset();a.alerts.clear();sectionName=reading='';lastHit=null;setState('Waiting for video','等待新画面');display.clearRect(0,0,view.width,view.height);
       if(a.run){observeRun(a.run,{t:a.elapsed,reason:'stalled'});a.missingFrom=a.elapsed}render();
     }
     if(a.run&&a.elapsed-a.lastCheckpoint>=1500){a.lastCheckpoint=a.elapsed;writeCheckpoint(a)}
@@ -215,14 +226,14 @@ function tick(now){
   raf=requestAnimationFrame(tick);
 }
 function interrupt(){
-  const a=active;if(!a)return;tracker.reset();a.alerts.clear();lastHit=null;sectionName=reading='';
+  const a=active;if(!a)return;schematicVisible=false;tracker.reset();a.alerts.clear();lastHit=null;sectionName=reading='';
   if(a.run){observeRun(a.run,{t:a.elapsed,reason:'interrupted'});a.missingFrom=a.elapsed;writeCheckpoint(a)}
   display.clearRect(0,0,view.width,view.height);setState('Waiting for video','等待新画面');render();
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden)interrupt()});
 window.addEventListener('pagehide',()=>{interrupt();cancelAnimationFrame(raf);stopMedia();active=null;epoch++});
 window.addEventListener('pageshow',e=>{if(e.persisted){setState('Ready','就绪');render()}});
-document.addEventListener('bridgelab:preferences',()=>{if(site){syncChooser();editor.renderForm()}render()});
+document.addEventListener('bridgelab:preferences',()=>{if(site){syncChooser();models.refresh();editor.renderForm()}render()});
 async function initialize(){
   try{sites=await listSites()}catch{savedMessage=['Device storage is unavailable. Allow site data to save references and runs.','设备存储不可用，请允许网站保存数据后再建档。']}
   site=sites.find(s=>s.id===initialId&&s.id!==demoId)||defaultSites.find(s=>s.id===initialId)||defaultSites[0];ready=true;syncChooser();render();

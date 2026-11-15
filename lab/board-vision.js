@@ -55,26 +55,72 @@ function projector(q){
           ((b[1]-a[1]+g*b[1])*u+(d[1]-a[1]+h*d[1])*v+a[1])/w];
  };
 }
-function decode(q,gray,w){
+// Decode an optically sampled dark frame and white moat before trusting any ID.
+// Bilinear samples reduce phase sensitivity on small, foreshortened screen markers.
+function sample(gray,w,h,x,y){
+ if(x<0||y<0||x>=w-1||y>=h-1)return NaN;
+ const i=Math.floor(x)+Math.floor(y)*w,dx=x-Math.floor(x),dy=y-Math.floor(y);
+ return (1-dy)*(gray[i]*(1-dx)+gray[i+1]*dx)+dy*(gray[i+w]*(1-dx)+gray[i+w+1]*dx);
+}
+function refineBoundary(q,gray,w,h){
+ // Estimate each outer edge from local black-to-white transitions. The
+ // thresholded component can be skewed by several pixels across a lit screen.
+ const lines=[];
+ for(let i=0;i<4;i++){
+  const a=q[i],b=q[(i+1)%4],dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy);
+  const nx=dy/length,ny=-dx/length,r=Math.min(4,length*.085),edges=[];
+  for(let k=1;k<=12;k++){
+   const f=(k+.5)/14,x=a[0]+f*dx,y=a[1]+f*dy;let best=10,pos=null;
+   for(let u=-r;u<=r;u+=.25){
+    const high=sample(gray,w,h,x+(u+.65)*nx,y+(u+.65)*ny);
+    const low=sample(gray,w,h,x+(u-.65)*nx,y+(u-.65)*ny);
+    if(high-low>best){best=high-low;pos=[x+u*nx,y+u*ny]}
+   }
+   if(pos)edges.push(pos);
+  }
+  if(edges.length<8)return q;
+  const mx=edges.reduce((t,p)=>t+p[0],0)/edges.length,my=edges.reduce((t,p)=>t+p[1],0)/edges.length;
+  let xx=0,xy=0,yy=0;
+  for(const [x,y] of edges){xx+=(x-mx)**2;xy+=(x-mx)*(y-my);yy+=(y-my)**2}
+  const theta=.5*Math.atan2(2*xy,xx-yy);
+  lines.push([mx,my,Math.cos(theta),Math.sin(theta)]);
+ }
+ const out=[];
+ for(let i=0;i<4;i++){
+  const [x,y,dx,dy]=lines[(i+3)%4],[u,v,du,dv]=lines[i],det=dx*dv-dy*du;
+  if(Math.abs(det)<.12)return q;
+  const t=((u-x)*dv-(v-y)*du)/det,p=[x+t*dx,y+t*dy];
+  if(Math.hypot(p[0]-q[i][0],p[1]-q[i][1])>7)return q;
+  out.push(p);
+ }
+ return out;
+}
+const ids=Object.keys(codes);
+const percentile=(list,p)=>list.slice().sort((a,b)=>a-b)[Math.floor((list.length-1)*p)];
+function decode(q,gray,w,h){
  if(q.length!==4)return null;
+ const sizePx=Math.min(...q.map((p,i)=>Math.hypot(p[0]-q[(i+1)%4][0],p[1]-q[(i+1)%4][1])));
+ if(sizePx<12)return null;
  const at=projector(q);
  if(!at)return null;
  let word=0;const frame=[],moat=[],payload=[];
  for(let row=0;row<8;row++)for(let col=0;col<8;col++){
-  const [x,y]=at((col+.5)/8,(row+.5)/8),v=gray[Math.round(y)*w+Math.round(x)];
+  const [x,y]=at((col+.5)/8,(row+.5)/8);
+  const v=sample(gray,w,h,x,y);
   if(!Number.isFinite(v))return null;
   if(!row||!col||row===7||col===7)frame.push(v);
   else if(row===1||col===1||row===6||col===6)moat.push(v);
   else payload.push(v);
  }
- const median=a=>a.slice().sort((a,b)=>a-b)[Math.floor(a.length/2)];
- const black=median(frame),white=median(moat);
- if(white-black<48)return null;
+ const black=percentile(frame,.5),white=percentile(moat,.5);
+ if(white-black<32)return null;
  const t=(white+black)/2;
- if(frame.some(v=>v>=t)||moat.some(v=>v<=t))return null;
+ // Retain the original exact 16-bit ID requirement (minimum rotated code
+ // distance is six bits). A little local glare on the surrounding ring is allowed.
+ if(frame.filter(v=>v>=t).length>2||moat.filter(v=>v<=t).length>1)return null;
  for(const value of payload)word=word*2+(value<t?1:0);
  const id=rotations.get(word);
- return id?{id,center:at(.5,.5)}:null;
+ return id?{id,center:at(.5,.5),sizePx}:null;
 }
 function threshold(hist,total){
  let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];
@@ -87,16 +133,8 @@ function threshold(hist,total){
  }
  return t;
 }
-function detect(image){
- const {width:w,height:h,data}=image;
- if(!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w*h>4000000||data.length!==w*h*4)throw Error('Expected an RGBA image up to 4 megapixels');
- const n=w*h,gray=new Uint8Array(n),hist=new Uint32Array(256);
- for(let i=0;i<n;i++){
-  const offset=i*4, value=(77*data[offset]+150*data[offset+1]+29*data[offset+2])>>8;
-  gray[i]=value;hist[value]++;
- }
- const limit=threshold(hist,n),mask=new Uint8Array(n),queue=new Int32Array(n),found=new Map(),duplicates=new Set();
- for(let i=0;i<n;i++)mask[i]=gray[i]<=limit?1:0;
+function findMarks(mask,w,h,gray,queue,state){
+ const n=w*h, pass=new Map();
  for(let start=0;start<n;start++){
   if(mask[start]!==1)continue;
   let count=1,minX=w,maxX=0,minY=h,maxY=0;queue[0]=start;mask[start]=2;
@@ -109,20 +147,75 @@ function detect(image){
    if(y<h-1&&mask[p+w]===1){mask[p+w]=2;queue[count++]=p+w}
   }
   const width=maxX-minX+1,height=maxY-minY+1;
-  if(count<42||width<14||height<14||width>Math.min(650,w*.5)||height>Math.min(650,h*.5)||
-     width>4*height||height>4*width||minX===0||minY===0||maxX===w-1||maxY===h-1)continue;
+  if(minX===0||minY===0||maxX===w-1||maxY===h-1||width>3*height||height>3*width)continue;
+  if(width>=8&&height>=8&&Math.max(width,height)<18&&count>=.18*width*height&&count<=.65*width*height)state.smallCandidates++;
+  if(count<36||width<13||height<13||width>Math.min(650,w*.58)||height>Math.min(650,h*.58))continue;
+  const fill=count/(width*height);
+  if(fill<.12||fill>.92)continue;
   // Left/right extrema of each scanline contain the convex hull.
   const left=new Int32Array(height).fill(w),right=new Int32Array(height).fill(-1);
   for(let j=0;j<count;j++){const x=queue[j]%w,y=(queue[j]-x)/w-minY;left[y]=Math.min(left[y],x);right[y]=Math.max(right[y],x)}
   const border=[];
-  for(let y=0;y<height;y++)if(right[y]>=0){border.push([left[y],minY+y],[right[y],minY+y])}
-  const mark=decode(corners(border),gray,w);
+  for(let y=0;y<height;y++)if(right[y]>=0)border.push([left[y],minY+y],[right[y],minY+y]);
+  const quad=corners(border);
+  let mark=decode(quad,gray,w,h);
   if(!mark)continue;
-  if(found.has(mark.id)){duplicates.add(mark.id);continue}
-  found.set(mark.id,{id:mark.id,xy:[(mark.center[0]+.5)/w,(mark.center[1]+.5)/h]});
+  const refined=decode(refineBoundary(quad,gray,w,h),gray,w,h);
+  if(refined?.id===mark.id)mark=refined;
+  if(pass.has(mark.id)){state.duplicates.add(mark.id);continue}
+  pass.set(mark.id,mark);
  }
- const ids=Object.keys(codes),points=ids.filter(id=>found.has(id)&&!duplicates.has(id)).map(id=>found.get(id));
- return {points,complete:points.length===ids.length,duplicates:[...duplicates],missing:ids.filter(id=>!found.has(id))};
+ for(const [id,mark] of pass){
+  const existing=state.found.get(id);
+  if(!existing)state.found.set(id,mark);
+  else if(Math.hypot(mark.center[0]-existing.center[0],mark.center[1]-existing.center[1])>Math.max(2.5,Math.min(mark.sizePx,existing.sizePx)*.12))state.duplicates.add(id);
+ }
+}
+function localThreshold(gray,w,h,mask){
+ const stride=w+1,integral=new Uint32Array(stride*(h+1));
+ for(let y=0;y<h;y++){
+  let sum=0;
+  for(let x=0;x<w;x++){sum+=gray[y*w+x];const i=(y+1)*stride+x+1;integral[i]=integral[i-stride]+sum}
+ }
+ // The reference window spans several cells of each marker, including its
+ // contrasting moat, without assuming an exposure shared by the whole monitor.
+ const r=Math.max(9,Math.min(48,Math.round(Math.min(w,h)*.065)));
+ for(let y=0;y<h;y++){
+  const y0=Math.max(0,y-r),y1=Math.min(h,y+r+1);
+  for(let x=0;x<w;x++){
+   const x0=Math.max(0,x-r),x1=Math.min(w,x+r+1);
+   const sum=integral[y1*stride+x1]-integral[y1*stride+x0]-integral[y0*stride+x1]+integral[y0*stride+x0];
+   const i=y*w+x;mask[i]=(gray[i]+9)*(x1-x0)*(y1-y0)<sum?1:0;
+  }
+ }
+}
+function detect(image){
+ const {width:w,height:h,data}=image;
+ if(!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w*h>4000000||data.length!==w*h*4)throw Error('Expected an RGBA image up to 4 megapixels');
+ const n=w*h,gray=new Uint8Array(n),hist=new Uint32Array(256);
+ for(let i=0;i<n;i++){
+  const offset=i*4,value=(77*data[offset]+150*data[offset+1]+29*data[offset+2])>>8;
+  gray[i]=value;hist[value]++;
+ }
+ const limit=threshold(hist,n),mask=new Uint8Array(n),queue=new Int32Array(n);
+ let darkest=0,lightest=255;while(!hist[darkest])darkest++;while(!hist[lightest])lightest--;
+ const contrast=lightest-darkest;
+ const state={found:new Map(),duplicates:new Set(),smallCandidates:0};
+ if(contrast>=32){
+  for(let i=0;i<n;i++)mask[i]=gray[i]<=limit?1:0;
+  findMarks(mask,w,h,gray,queue,state);
+  if(state.found.size<ids.length){localThreshold(gray,w,h,mask);findMarks(mask,w,h,gray,queue,state)}
+ }
+ const points=ids.filter(id=>state.found.has(id)&&!state.duplicates.has(id)).map(id=>{
+  const {center,sizePx}=state.found.get(id);
+  return {id,xy:[(center[0]+.5)/w,(center[1]+.5)/h],sizePx};
+ });
+ const missing=ids.filter(id=>!state.found.has(id)),duplicates=[...state.duplicates];
+ const complete=points.length===ids.length;
+ const small=points.length?Math.max(...points.map(p=>p.sizePx))<18:state.smallCandidates>=4;
+ let reason=complete?'complete':points.length?'partial':'no_markers';
+ if(!complete){if(duplicates.length)reason='duplicate';else if(contrast<32)reason='low_contrast';else if(small)reason='small_markers';}
+ return {points,complete,duplicates,missing,contrast,reason};
 }
 function detectImage(imageElement){
  const w=imageElement.naturalWidth,h=imageElement.naturalHeight;

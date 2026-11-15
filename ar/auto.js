@@ -162,13 +162,17 @@ function matchPattern(frame,index,pattern,offsets){
  if(second&&best.score-second.score<.08)return null;
  return {x:best.x+(pattern.x-Math.round(pattern.x)),y:best.y+(pattern.y-Math.round(pattern.y)),score:Math.min(1,best.score)};
 }
-function fromBoard(image,model,nodes,K,sectionId){
- if(!validRaster(image)||image.data?.length!==image.width*image.height*4)return failure(sectionId,'no_image');
+export function detectBoard(image){
  let decoded=boardCache.get(image);
  if(!decoded){decoded=globalThis.BoardVision.detect(image);boardCache.set(image,decoded)}
+ return decoded;
+}
+function fromBoard(image,model,nodes,K,sectionId){
+ if(!validRaster(image)||image.data?.length!==image.width*image.height*4)return failure(sectionId,'no_image');
+ const decoded=detectBoard(image);
  const mapping=model.id==='ar-test-board'?builtinCodes:model.markerMap;
  const points=new Map(decoded.points.filter(p=>mapping[p.id]).map(p=>[mapping[p.id],{x:p.xy[0]*image.width-.5,y:p.xy[1]*image.height-.5,score:1}]));
- const result=audited(points,nodes,K);return result?{ok:true,...result,sectionId,method:'coded',reason:''}:failure(sectionId,'unverified_codes');
+ const result=audited(points,nodes,K);return result?{ok:true,...result,sectionId,method:'coded',reason:'',board:decoded}:{...failure(sectionId,'unverified_codes'),board:decoded};
 }
 // One candidate reference/viewpoint per call. The caller can test neighboring sections against
 // the same immutable frame, then reject mutually inconsistent successful section hypotheses.

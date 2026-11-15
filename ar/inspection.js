@@ -1,20 +1,30 @@
 import {grayFrame,trackPoint,project} from './vision.js';
-import {registerFrame,captureReference} from './auto.js';
+import {registerFrame,captureReference,detectBoard} from './auto.js';
 import {replayModel,replaySize,replayK,replaySeeds,drawReplay} from './replay.js';
 import {compare,assessAlert,limitPx,tolerancePx} from './measure.js';
+import {placeBridge,drawMiniature,locateBoard} from './board-model.js';
+import {sketch} from '../models/viewer.js';
+import {drawBoardSample,boardSampleSize,boardSampleK} from './board-sample.js';
 
 const el=id=>document.getElementById(id);
 const video=el('camera'),view=el('view'),ctx=view.getContext('2d',{alpha:false});
 const raw=document.createElement('canvas'),camera=raw.getContext('2d',{willReadFrequently:true,alpha:false});
 const query=new URLSearchParams(location.search);
 const replay=query.get('mode')==='replay'||query.get('replay')==='1';
+const sample=!replay&&query.get('mode')==='board-demo',hasCamera=!replay&&!sample;
 const status=el('status'),hint=el('hint');
+const choice=el('model-choice'),preview=el('model-preview'),previewToggle=el('preview-toggle');
+let selectedModel=null,miniature=null,viewer=null,modelRequest=0,loadingModel=false,currentBoard=null;
+let storedBridge;try{storedBridge=localStorage.getItem('bridgelab.tabletop.bridge')}catch{}
+const safeBridge=id=>['waibaidu','training-span'].includes(id);
+const requested=query.get('bridge')||query.get('model');
+const initialBridge=safeBridge(requested)?requested:(safeBridge(storedBridge)?storedBridge:'waibaidu');
 let generation=0,running=false,raf=0,stream=null,model,K,session=null;
 let prior=null,previous=null,tracked=new Map(),alertHistory=new Map(),reference=null;
 let lastScan=-Infinity,lastFrameAt=0,videoTime=-1,clockStart=0,hasLock=false,frameCount=0;
 
 const messages={
-  'Ready':'就绪','Unavailable':'暂不可用','Stopped':'已结束','Loading replay':'正在加载回放',
+  'Board registered':'测试板已定位','Model anchored':'模型已锚定','Board target shifted':'测试板目标已移动','Starting sample':'正在加载模拟画面','Ready':'就绪','Unavailable':'暂不可用','Stopped':'已结束','Loading replay':'正在加载回放',
   'Opening camera':'正在打开相机','Locating':'正在定位','Tracking':'跟踪中','Deviation detected':'发现偏差',
   'Synthetic camera sequence.':'合成视频序列。','Synthetic camera sequence · 8 m truss':'合成视频 · 8 米桁架',
   'Allow access to the rear camera.':'请允许使用后置摄像头。','Matching the reference view.':'正在匹配参考画面。',
@@ -35,10 +45,32 @@ const messages={
 const text=(en,zh)=>window.BridgePrefs.text(en,zh);
 const translate=msg=>text(msg,messages[msg]);
 let displayState={title:'Ready',kind:'idle',message:replay?'Synthetic camera sequence · 8 m truss':'Keep all six board markers in view.',offset:null};
+function describeBoard() {
+  const {found,fit}=currentBoard;
+  const n=found.points.length,header=text(`Marks ${n}/6 · `,`已识别 ${n}/6 · `);
+  if(found.duplicates?.length)return header+text('Frame a single board.','请只拍一块测试板。');
+  if(fit.reason==='missing-controls'){
+    if(!n)return header+(
+      found.reason==='low_contrast'?text('Reduce glare and brighten the board.','请避开反光并调亮测试板。'):
+      found.reason==='small_markers'?text('Move closer or enlarge the board.','请靠近或放大测试板。'):
+      text('Aim at the six square codes on the second screen.','请对准另一块屏幕上的六个方形码。'));
+    const positions={C1:text('upper left','左上'),C2:text('upper right','右上'),C3:text('lower right','右下'),C4:text('lower left','左下')};
+    const missing=Object.keys(positions).filter(id=>!fit.observed.has(id)).map(id=>positions[id]).join(' / ');
+    if(found.reason==='small_markers')return header+text('Enlarge the board or move closer. Missing: '+missing+'.','请放大测试板或靠近一些，缺少'+missing+'角码。');
+    return header+text('Frame the missing corners: '+missing+'.','请拍入缺少的角码：'+missing+'。');
+  }
+  if(fit.reason==='check-failed')return header+text('Check point disagrees. Flatten the board and reduce the tilt.','检查点不一致。请放平测试板并减小拍摄倾角。');
+  if(fit.reason==='geometry')return header+text('Face the front of the board and keep its four corners in frame.','请对准测试板正面并拍全四角。');
+  if(fit.reason==='pose-uncertain')return header+text('3D pose uncertain. Move toward a front view.','三维姿态未通过核验，请转向更正面的视角。');
+  if(fit.reason==='missing-check')return header+text('Show the center check to measure the target.','请拍入中央检查点以测量目标。');
+  if(fit.reason==='missing-target'||fit.reason==='outside')return header+text('Show the movable target inside the corners.','让可移动目标出现在四角之间。');
+  if(fit.rows.length)return header+text('Board target '+fit.rows[0].px.toFixed(1)+' px · trigger '+limitPx+' px','测试板目标偏差 '+fit.rows[0].px.toFixed(1)+' px · 阈值 '+limitPx+' px');
+  return header+text('Keep the full board in view.','请拍全测试板。');
+}
 function paintState(){
   const {title,kind,message,offset}=displayState;
   const nextStatus=translate(title);
-  const nextHint=offset===null?translate(message):text(
+  const nextHint=currentBoard?describeBoard():offset===null?translate(message):text(
     `Target offset ${offset} px · trigger ${limitPx} px`,
     `目标偏差 ${offset} px · 阈值 ${limitPx} px`);
   if(status.textContent!==nextStatus)status.textContent=nextStatus;
@@ -52,14 +84,54 @@ function paintStats(){
     :text('No frames yet.','暂无画面记录。');
 }
 function renderLanguage(){
-  const title=replay?text('Truss replay','桁架回放'):text('Board inspection','测试板巡检');
+  const title=replay?text('Truss replay','桁架回放'):text('Tabletop bridge AR','桌面桥梁 AR');
   el('title').textContent=title;
   document.title=title+' · BridgeLab';
-  el('switch-label').textContent=replay?text('Try live camera','试用相机'):text('Watch replay','观看回放');
-  el('start').textContent=replay?text('Play replay','播放回放'):text('Start camera','开启相机');
+  el('switch-label').textContent=(replay||sample)?text('Try live camera','试用相机'):text('Watch replay','观看回放');
+  el('start').textContent=replay?text('Play replay','播放回放'):sample?text('Play sample','播放桌面示例'):text('Start camera','开启相机');
+  if(!replay){
+    el('model-state').textContent=loadingModel?text('Loading schematic model…','正在加载示意模型…'):selectedModel?
+      text('Schematic model · '+selectedModel.lengthM+' m · scaled to the test board','示意模型 · '+selectedModel.lengthM+' 米 · 缩放至测试板'):
+      text('Bridge model unavailable.','桥梁模型未加载。');
+    previewToggle.textContent=preview.hidden?text('View 3D model','查看三维模型'):text('Close preview','收起三维预览');
+    viewer?.draw();
+  }
   paintState();paintStats();
 }
-if(replay){el('switch').href='?mode=camera';el('board').hidden=true}
+function updateLinks(){
+  const id=choice.value||initialBridge;
+  el('board').href='../target/?bridge='+id;
+  el('switch').href='?mode='+(replay||sample?'camera':'replay')+'&bridge='+id;
+  el('sample-link').href='?mode=board-demo&bridge='+id;
+}
+async function loadBridge(){
+  const id=choice.value,seq=++modelRequest;
+  selectedModel=null;miniature=null;viewer?.destroy();viewer=null;
+  const can=el('preview-canvas');can.getContext('2d').clearRect(0,0,can.width,can.height);
+  loadingModel=true;el('model-retry').hidden=true;updateLinks();renderLanguage();
+  try{
+    const r=await fetch(new URL('../models/'+id+'.json',import.meta.url));
+    if(!r.ok)throw Error('Model unavailable');
+    const data=await r.json();if(seq!==modelRequest)return;
+    const prepared=placeBridge(data);
+    viewer=sketch(can,data);miniature=prepared;selectedModel=data;
+    if(session){session.displayModel=id;record('display-model',{id})}
+  }catch{if(seq===modelRequest)el('model-retry').hidden=false}
+  finally{if(seq===modelRequest){loadingModel=false;renderLanguage()}}
+}
+if(replay){el('switch').href='?mode=camera&bridge='+initialBridge;el('board').hidden=true}
+else {
+  choice.value=initialBridge;
+  el('model-panel').hidden=false;el('sample-badge').hidden=!sample;el('sample-link').hidden=sample;
+  choice.onchange=()=>{
+    try{localStorage.setItem('bridgelab.tabletop.bridge',choice.value)}catch{}
+    const url=new URL(location.href);url.searchParams.set('bridge',choice.value);url.searchParams.delete('model');history.replaceState(null,'',url);
+    loadBridge();
+  };
+  previewToggle.onclick=()=>{preview.hidden=!preview.hidden;previewToggle.setAttribute('aria-expanded',String(!preview.hidden));renderLanguage()};
+  el('model-retry').onclick=loadBridge;
+  loadBridge();
+}
 document.addEventListener('bridgelab:preferences',renderLanguage);
 renderLanguage();
 
@@ -68,7 +140,7 @@ function setState(title,kind,message,offset=null) {
   paintState();
 }
 function resetTracking() {
-  prior=null;previous=null;tracked.clear();alertHistory.clear();hasLock=false;lastScan=-Infinity;
+  currentBoard=null;prior=null;previous=null;tracked.clear();alertHistory.clear();hasLock=false;lastScan=-Infinity;
 }
 function record(type,details={}) {
   if(!session)return;
@@ -79,7 +151,7 @@ function size(width,height) {
   const ratio=Math.min(1,640/Math.max(width,height));
   raw.width=view.width=Math.max(1,Math.round(width*ratio));
   raw.height=view.height=Math.max(1,Math.round(height*ratio));
-  K=replay?replayK:{fx:.95*Math.max(raw.width,raw.height),fy:.95*Math.max(raw.width,raw.height),cx:raw.width/2,cy:raw.height/2};
+  K=replay?replayK:sample?boardSampleK:{fx:.95*Math.max(raw.width,raw.height),fy:.95*Math.max(raw.width,raw.height),cx:raw.width/2,cy:raw.height/2};
   if(session)session.processingSize=[raw.width,raw.height];
 }
 function setupReplay() {
@@ -110,24 +182,26 @@ async function start() {
   clockStart=performance.now();frameCount=0;videoTime=-1;lastFrameAt=clockStart;session=null;reference=null;resetTracking();
   el('export').disabled=true;paintStats();
   el('start').disabled=true;el('idle').hidden=true;el('stop').hidden=false;el('stage').dataset.ended='false';el('stage').dataset.active='false';
-  setState(replay?'Loading replay':'Opening camera','search',replay?'Synthetic camera sequence.':'Allow access to the rear camera.');
+  setState(replay?'Loading replay':sample?'Starting sample':'Opening camera','search',replay||sample?'Synthetic camera sequence.':'Allow access to the rear camera.');
   try{
     if(replay)model=replayModel;
     else{
-      if(!navigator.mediaDevices?.getUserMedia)throw Error('Open this page in a browser with HTTPS camera access.');
-      const media=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
-      if(generation!==token){media.getTracks().forEach(t=>t.stop());return;}
-      stream=media;const track=media.getVideoTracks()[0];
-      track.onended=()=>stop('The camera closed. Start it again to resume.',true);
-      video.srcObject=media;await video.play();if(generation!==token)return;
+      if(hasCamera){
+        if(!navigator.mediaDevices?.getUserMedia)throw Error('Open this page in a browser with HTTPS camera access.');
+        const media=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
+        if(generation!==token){media.getTracks().forEach(t=>t.stop());return;}
+        stream=media;const track=media.getVideoTracks()[0];
+        track.onended=()=>stop('The camera closed. Start it again to resume.',true);
+        video.srcObject=media;await video.play();if(generation!==token)return;
+      }
       const response=await fetch(new URL('../models/ar-test-board.json',import.meta.url));
       if(!response.ok)throw Error('Could not load the test board model.');
       model=await response.json();if(generation!==token)return;
     }
-    session={format:'bridgelab-public-run-v1',mode:replay?'synthetic-replay':'board-camera',model:model.id,revision:model.revision,
+    session={format:'bridgelab-public-run-v1',mode:replay?'synthetic-replay':sample?'synthetic-board':'board-camera',model:model.id,revision:model.revision,displayModel:replay?null:selectedModel?.id??null,
       startedAt:new Date().toISOString(),thresholdPx:limitPx,checkTolerancePx:tolerancePx,persistenceMs:420,minimumFrames:3,
       processedFrames:0,verifiedFrames:0,alerts:0,omittedEvents:0,events:[]};
-    if(replay)setupReplay();else size(video.videoWidth||640,video.videoHeight||360);
+    if(replay)setupReplay();else if(sample)size(...boardSampleSize);else size(video.videoWidth||640,video.videoHeight||360);
     clockStart=performance.now();lastFrameAt=clockStart;
     el('stage').dataset.active='true';record('start');
     setState('Locating','search',replay?'Matching the reference view.':'Keep all six board markers in view.');
@@ -140,7 +214,7 @@ async function start() {
 }
 function loseLock(msg) {
   if(hasLock)record('check-lost');
-  hasLock=false;prior=null;alertHistory.clear();
+  currentBoard=null;hasLock=false;prior=null;alertHistory.clear();
   setState('Locating','search',msg);
 }
 function observe(image,now) {
@@ -160,18 +234,24 @@ function observe(image,now) {
     }
     previous=frame;tracked=tracks;return result;
   }
-  // Decode each camera frame independently; never measure from a stale pose.
-  const match=registerFrame({image,model,K,sectionId:model.sections[0].id});
-  return match.ok?compare(model,K,match.tracks,match.pose,raw.width,raw.height):null;
+  const found=detectBoard(image);
+  const fit=locateBoard(found,model,K,raw.width,raw.height,prior);
+  currentBoard={found,fit};
+  return fit;
 }
 function overlay(result,activeRows) {
-  const xy=new Map(model.nodes.map(n=>[n.id,project(result.pose,K,n.xyz)]));
-  ctx.strokeStyle='#abadff';ctx.lineWidth=1.6;ctx.beginPath();
-  for(const e of model.members){
-    const a=xy.get(e.a),b=xy.get(e.b);
-    if(a&&b){ctx.moveTo(...a);ctx.lineTo(...b)}
+  if(!replay){
+    if(result.pose&&miniature)drawMiniature(ctx,miniature,result.pose,result.K);
+    for(const [id,[x,y]] of result.observed){
+      ctx.strokeStyle=id==='TARGET'?'#dc9246':'#3e917e';ctx.lineWidth=1.6;
+      ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.stroke();
+    }
+  }else{
+    const xy=new Map(model.nodes.map(n=>[n.id,project(result.pose,K,n.xyz)]));
+    ctx.strokeStyle='#abadff';ctx.lineWidth=1.6;ctx.beginPath();
+    for(const e of model.members){const a=xy.get(e.a),b=xy.get(e.b);if(a&&b){ctx.moveTo(...a);ctx.lineTo(...b)}}
+    ctx.stroke();
   }
-  ctx.stroke();
   for(const r of activeRows){
     ctx.strokeStyle='#ff717b';ctx.lineWidth=3;
     ctx.beginPath();ctx.moveTo(...r.predicted);ctx.lineTo(...r.observed);ctx.stroke();
@@ -186,11 +266,12 @@ function overlay(result,activeRows) {
 function loop(now) {
   if(!running)return;
   try{
-    const fresh=replay||(video.readyState>=2&&video.currentTime!==videoTime);
+    const fresh=!hasCamera||(video.readyState>=2&&video.currentTime!==videoTime);
     if(!document.hidden&&fresh&&now-lastFrameAt>=85){
       const gap=now-lastFrameAt;lastFrameAt=now;
       if(!replay&&gap>1000)resetTracking();
       if(replay)drawReplay(camera,frameCount/10);
+      else if(sample)drawBoardSample(camera,(now-clockStart)/1000);
       else{
         if(!video.videoWidth||!video.videoHeight){raf=requestAnimationFrame(loop);return}
         if(Math.abs(raw.width/raw.height-video.videoWidth/video.videoHeight)>.01){size(video.videoWidth,video.videoHeight);resetTracking()}
@@ -201,8 +282,15 @@ function loop(now) {
       ctx.drawImage(raw,0,0);
       if(result){
         prior=result.pose;
-        if(!hasLock)record('aligned',{independentCheckPx:result.checkMaxPx});
-        hasLock=true;session.verifiedFrames++;
+        const verified=replay||result.verified;
+        if(verified){
+          if(!hasLock)record('aligned',{independentCheckPx:result.checkMaxPx});
+          session.verifiedFrames++;
+        }else{
+          if(hasLock)record('check-lost');
+          alertHistory.clear();
+        }
+        hasLock=verified;
         const active=[];
         for(const r of result.rows){
           const old=alertHistory.get(r.id),next=assessAlert(old,r.px,now);alertHistory.set(r.id,next);
@@ -211,11 +299,16 @@ function loop(now) {
           if(!next.active&&old?.active)record('cleared',{point:r.id});
         }
         overlay(result,active);
-        setState(active.length?'Deviation detected':'Tracking',active.length?'alert':'tracking',replay?'Synthetic camera sequence · 8 m truss':'Board aligned · image-plane measurement',active.length?active[0].px.toFixed(1):null);
+        if(replay)setState(active.length?'Deviation detected':'Tracking',active.length?'alert':'tracking','Synthetic camera sequence · 8 m truss',active.length?active[0].px.toFixed(1):null);
+        else{
+          const anchored=!!(result.pose&&miniature);
+          const heading=active.length?'Board target shifted':anchored?'Model anchored':result.verified?'Board registered':'Locating';
+          setState(heading,active.length?'alert':anchored||result.verified?'tracking':'search','Board aligned · image-plane measurement');
+        }
       }else loseLock(replay?'Matching the reference view.':'Keep all six board markers in view.');
       paintStats();
       el('export').disabled=false;
-    }else if(!replay&&now-lastFrameAt>1200) {
+    }else if(hasCamera&&now-lastFrameAt>1200) {
       loseLock('Waiting for a fresh camera frame.');
       ctx.clearRect(0,0,view.width,view.height);
     }
@@ -235,4 +328,4 @@ el('export').onclick=()=>{
 };
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){loseLock('Waiting for a fresh frame.');resetTracking();ctx.clearRect(0,0,view.width,view.height)}});
 window.addEventListener('pagehide',()=>{if(running)stop()});
-if(replay||query.get('mode')==='camera'||query.get('start')==='1')start();
+if(replay||sample||query.get('mode')==='camera'||query.get('start')==='1')start();

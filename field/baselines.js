@@ -1,4 +1,5 @@
 import {attachPicker} from './setup.js';
+import {readGeometry} from './model-overlay.js';
 import {createBaseline} from './tracker.js';
 import {newId,saveSite} from './storage.js';
 
@@ -20,7 +21,7 @@ const errors={
   points:['Select all six points away from the image edges.','请在画面边缘以内选满六个点。']
 };
 const cornerNames=[['upper left','左上角'],['upper right','右上角'],['lower right','右下角'],['lower left','左下角'],['independent stable check','独立且稳定的检查点'],['monitoring target','监测目标']];
-export function manageBaselines({getSite,onSite,cameraFrame,openPreview,notify}){
+export function manageBaselines({getSite,onSite,cameraFrame,openPreview,models,notify}){
   let frozen=null,busy=false;
   const mode=()=>el('picker-mode').value;
   const picker=attachPicker(el('picker'),(_,reason)=>{if(frozen)renderForm();if(reason&&errors[reason])notify(...errors[reason])});
@@ -29,13 +30,29 @@ export function manageBaselines({getSite,onSite,cameraFrame,openPreview,notify})
   }
   function renderForm(){
     if(!frozen)return;
-    const n=picker.points.length;el('scale').hidden=mode()!=='metric';
+    const n=picker.points.length;el('scale').hidden=mode()!=='metric';el('model-binding').hidden=mode()!=='model';
     el('neighbor-row').hidden=mode()==='auto'||!getSite().sections.length;
     el('save-section').disabled=n!==6||busy;
     el('pick-prompt').textContent=mode()==='auto'
       ? n===6?text('Check the four fixed features and the independent check share the target plane.','核对四个固定标志与独立检查点是否稳定，并与目标共面。'):text('Tap the feature you want to monitor.','点一下你想监测的特征。')
       : n===6?text('Check all six roles before saving.','请核对六个点的角色后保存。'):(mode()==='metric'?text('Use a measured, flat rectangle. ','选择实测矩形，六点须共面。'):text('Choose stable points on the target plane. ','选择与目标共面的稳定特征。'))+text('Select ','请点选')+text(...cornerNames[n])+'.';
+    if(mode()==='model'&&n<4){
+      el('pick-prompt').textContent=text('Tap the physical joint at ','请点选实物')+text(...cornerNames[n])+text(' corresponding to model node ','对应的模型节点 ')+(models.cornerIds()[n]||'')+text('.','。');
+    }
   }
+  el('model-panel').onchange=el('model-reverse').onchange=()=>{if(frozen){picker.clear();renderForm()}};
+  el('field-model-file').onchange=async e=>{
+    const file=e.target.files[0],site=getSite();if(!file)return;
+    try{
+      if(file.size>5e6)throw Error('size');
+      const data=JSON.parse(await file.text());data.assetKey=newId();readGeometry(data);
+      const next=await saveSite({...site,geometry:data});
+      cancel();await onSite(next);notify('3D model saved to this project on this device.','三维模型已保存到此设备的当前项目。');
+    }catch(err){
+      if(err.code==='site-changed')notify('This project changed in another tab. Reload before importing.','另一标签页已修改此项目，请刷新后重新导入。');
+      else notify('Import a BridgeLab node/member JSON under 5 MB. See the repository README for the panel format.','请导入 5 MB 以内的 BridgeLab 节点和构件 JSON；片区格式见仓库 README。');
+    }finally{e.target.value=''}
+  };
   function list(){
     const site=getSite();el('neighbor').replaceChildren(new Option(text('No shared edge','不共用边'),''));
     const sel=document.createElement('span');
@@ -46,7 +63,7 @@ export function manageBaselines({getSite,onSite,cameraFrame,openPreview,notify})
   function edit(f){
     if(!f)return;
     frozen=f;el('setup').open=true;el('baseline-form').hidden=false;el('section-input').value='';
-    el('picker-mode').value='auto';el('width-mm').value=el('height-mm').value='';
+    el('picker-mode').value='auto';el('model-reverse').checked=false;el('width-mm').value=el('height-mm').value='';
     el('limit-mm').value='5';el('neighbor').value='';
     picker.setMode('auto');picker.setFrame(f.frame);renderForm();
   }
@@ -77,6 +94,10 @@ export function manageBaselines({getSite,onSite,cameraFrame,openPreview,notify})
     try{
       const made=createBaseline({...frozen,id:newId(),name,points:picker.points,bridgeId:site.id,revision:site.revision+1,calibration,overlap});
       if(!made.ok){notify(...(errors[made.reason]||errors.points));return}
+      if(mode()==='model'){
+        const binding=models.binding();if(!binding){notify('Choose a model panel.','请选择模型片区。');return}
+        made.baseline.modelBinding=binding;
+      }
       const next=await saveSite({...site,sections:[...site.sections,made.baseline]});
       cancel();await onSite(next);notify('Reference saved. Start a walk when ready.','基准已保存，可以开始走查。');
     }catch(e){notify(...(e.code==='site-changed'?['This project changed in another tab. Reload before saving.','项目已在另一标签页更新，请刷新后保存。']:['Could not save the reference on this device.','此设备未能保存基准。']))}

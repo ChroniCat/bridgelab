@@ -16,21 +16,29 @@
   <nav aria-label="Main" data-zh-aria="主导航"><a href="../" data-zh="首页">Overview</a><a href="../target/" data-zh="测试板">Test board</a><div class="pref-controls" data-preferences></div></nav>
 </div></header>
 <main>
-  <div class="heading"><h1 id="title">Board inspection</h1>
+  <div class="heading"><h1 id="title">Tabletop bridge AR</h1>
     <a id="switch" href="?mode=replay"><span id="switch-label">Watch replay</span> <span aria-hidden="true">↗</span></a>
+  </div>
+  <div id="model-panel" class="model-panel" hidden>
+    <div class="model-toolbar"><label for="model-choice" data-zh="桥梁模型">Bridge model</label>
+      <select id="model-choice"><option value="waibaidu" data-zh="外白渡桥">Waibaidu Bridge</option><option value="training-span" data-zh="教学桁架桥">Teaching truss</option></select>
+      <button type="button" id="preview-toggle" aria-expanded="false" aria-controls="model-preview" data-zh="查看三维模型">View 3D model</button>
+      <button type="button" id="model-retry" hidden data-zh="重试加载">Retry model</button></div>
+    <p id="model-state" role="status"></p>
+    <div id="model-preview" hidden><canvas id="preview-canvas" tabindex="0" aria-label="Drag to rotate the schematic bridge model" data-zh-aria="拖动旋转桥梁示意模型"></canvas></div>
   </div>
   <section aria-label="Inspection view" data-zh-aria="巡检画面" class="card">
     <div id="stage" class="stage">
       <video id="camera" muted playsinline autoplay aria-hidden="true"></video>
       <canvas id="view" width="640" height="360" aria-label="Live image with projected model" data-zh-aria="叠加模型的巡检画面"></canvas>
-      <span id="status" role="status">Ready</span>
+      <span id="status" role="status">Ready</span><span id="sample-badge" hidden data-zh="模拟画面">Simulated image</span>
       <div id="idle" class="idle"><button id="start">Start camera</button></div>
     </div>
     <div class="controls"><p id="hint" aria-live="polite">Keep all six board markers in view.</p>
       <button id="stop" data-zh="结束" hidden>Stop</button>
     </div>
   </section>
-  <div class="links"><a id="board" href="../target/" target="_blank" rel="noopener"><span data-zh="打开测试板">Open test board</span> <span aria-hidden="true">↗</span></a>
+  <div class="links"><div class="mode-links"><a id="sample-link" href="?mode=board-demo" hidden data-zh="观看测试板示例">Try board simulation</a><a id="board" href="../target/" target="_blank" rel="noopener"><span data-zh="打开测试板">Open test board</span> <span aria-hidden="true">↗</span></a></div>
     <details><summary data-zh="巡检记录">Session record</summary><div class="record"><p id="stats">No frames yet.</p>
       <button id="export" data-zh="下载 JSON" disabled>Download JSON</button></div></details>
   </div>
