@@ -23,3 +23,10 @@ dialog{padding:22px;max-width:min(360px,calc(100vw - 24px));width:100%;max-heigh
 .expanded .scene-top{padding-block:2px}.expanded .transport{padding-block:7px}
 @media(max-width:510px){.transport{flex-wrap:wrap;padding:9px 10px;gap:9px}.transport .button{font-size:13px;min-width:95px}.transport output{font-size:11px}.view-tools{gap:9px}.control-group .help{max-width:none}}
 @media(max-width:510px){.experiment-controls{grid-template-columns:1fr;gap:15px}.phone-group{border-top:1px solid var(--edge);padding-top:13px}.phone-group .button{width:auto}.phone-group a{margin-left:8px}.scene-top{padding:7px 11px}}
+
+/* Close affordance for the mobile QR pairing modal. */
+dialog#pair-dialog{position:relative}
+#pair-dialog h2{padding-right:42px}
+#pair-dialog #pair-dismiss{position:absolute;right:12px;top:12px;display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--muted);font:400 27px/1 inherit;cursor:pointer}
+#pair-dialog #pair-dismiss:hover{background:var(--bg);color:var(--text);border-color:var(--edge)}
+#pair-dialog #pair-dismiss:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
