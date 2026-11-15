@@ -5,10 +5,18 @@
  "kind": "visual-reconstruction",
  "units": "m",
  "lengthM": 104.356,
- "revision": 2,
- "source": "Original visual reconstruction constrained by the published repair design and exterior photography. Two spans of 52.178 m, 11 panels per span, 9.144 m midspan depth and 12.192 m between main truss axes.",
- "accuracy": "Intermediate node elevations, cross sections, details, road surface, deck grades, pier shape and support geometry are visual approximations. No surveyed coordinates or validated structural properties.",
+ "revision": 3,
+ "source": "Original visual reconstruction. The 2009 repair study gives two 52.178 m spans, 11 panels per span, 9.144 m midspan depth and 12.192 m between main truss axes. Each span’s single end-adjacent webs and seven central sets of crossed webs follow the 1977 Shanghai Municipal Archives elevation Q215-1-9610 and were checked against a 2025 exterior photograph.",
+ "accuracy": "Intermediate chord heights are estimated from a scan of the 1977 elevation and scaled to the published midspan depth. Section sizes, rivets, railing, pavement, deck grades, pier shape and bearings are visual approximations. No surveyed coordinates or validated structural properties.",
  "references": [
+  {
+   "title": "上海市档案馆藏 Q215-1-9610，1977年外白渡桥大修工程设计图（单跨主桁立面）",
+   "url": "https://www.shda.gov.cn/office-utils-data/202601/20260120/20260120bde80294.009.jpeg"
+  },
+  {
+   "title": "Suicasmo，外白渡桥实景照片，2025年5月1日，CC0",
+   "url": "https://commons.wikimedia.org/wiki/File:Waibaidu_Bridge_20250501-1.jpg"
+  },
   {
    "title": "岳贵平等 (2009)，外白渡桥船移大修保护工程设计（上），§2.1",
    "url": "https://doc.xuehai.net/b1ddf795ae8994a953c8c2695-2.html"
@@ -23,6 +31,20 @@
   }
  ],
  "datum": "X along bridge from the first bearing centre, Y across, Z up; lower chord datum Z = 0.",
+ "displayBounds": [
+  [
+   -1.323,
+   105.679
+  ],
+  [
+   -9.6772,
+   9.6772
+  ],
+  [
+   -5.15,
+   9.469
+  ]
+ ],
  "nodes": [
   {
    "id": "N0-B",
@@ -50,7 +72,7 @@
    "xyz": [
     4.7435,
     -6.096,
-    6.13
+    6.03
    ],
    "station": 4.7435
   },
@@ -70,7 +92,7 @@
    "xyz": [
     9.4869,
     -6.096,
-    7.35
+    7.84
    ],
    "station": 9.4869
   },
@@ -90,7 +112,7 @@
    "xyz": [
     14.2304,
     -6.096,
-    8.24
+    8.53
    ],
    "station": 14.2304
   },
@@ -110,7 +132,7 @@
    "xyz": [
     18.9738,
     -6.096,
-    8.84
+    8.94
    ],
    "station": 18.9738
   },
@@ -170,7 +192,7 @@
    "xyz": [
     33.2042,
     -6.096,
-    8.84
+    8.94
    ],
    "station": 33.2042
   },
@@ -190,7 +212,7 @@
    "xyz": [
     37.9476,
     -6.096,
-    8.24
+    8.53
    ],
    "station": 37.9476
   },
@@ -210,7 +232,7 @@
    "xyz": [
     42.6911,
     -6.096,
-    7.35
+    7.84
    ],
    "station": 42.6911
   },
@@ -230,7 +252,7 @@
    "xyz": [
     47.4345,
     -6.096,
-    6.13
+    6.03
    ],
    "station": 47.4345
   },
@@ -270,7 +292,7 @@
    "xyz": [
     4.7435,
     6.096,
-    6.13
+    6.03
    ],
    "station": 4.7435
   },
@@ -290,7 +312,7 @@
    "xyz": [
     9.4869,
     6.096,
-    7.35
+    7.84
    ],
    "station": 9.4869
   },
@@ -310,7 +332,7 @@
    "xyz": [
     14.2304,
     6.096,
-    8.24
+    8.53
    ],
    "station": 14.2304
   },
@@ -330,7 +352,7 @@
    "xyz": [
     18.9738,
     6.096,
-    8.84
+    8.94
    ],
    "station": 18.9738
   },
@@ -390,7 +412,7 @@
    "xyz": [
     33.2042,
     6.096,
-    8.84
+    8.94
    ],
    "station": 33.2042
   },
@@ -410,7 +432,7 @@
    "xyz": [
     37.9476,
     6.096,
-    8.24
+    8.53
    ],
    "station": 37.9476
   },
@@ -430,7 +452,7 @@
    "xyz": [
     42.6911,
     6.096,
-    7.35
+    7.84
    ],
    "station": 42.6911
   },
@@ -450,7 +472,7 @@
    "xyz": [
     47.4345,
     6.096,
-    6.13
+    6.03
    ],
    "station": 47.4345
   },
@@ -480,7 +502,7 @@
    "xyz": [
     56.9215,
     -6.096,
-    6.13
+    6.03
    ],
    "station": 56.9215
   },
@@ -500,7 +522,7 @@
    "xyz": [
     61.6649,
     -6.096,
-    7.35
+    7.84
    ],
    "station": 61.6649
   },
@@ -520,7 +542,7 @@
    "xyz": [
     66.4084,
     -6.096,
-    8.24
+    8.53
    ],
    "station": 66.4084
   },
@@ -540,7 +562,7 @@
    "xyz": [
     71.1518,
     -6.096,
-    8.84
+    8.94
    ],
    "station": 71.1518
   },
@@ -600,7 +622,7 @@
    "xyz": [
     85.3822,
     -6.096,
-    8.84
+    8.94
    ],
    "station": 85.3822
   },
@@ -620,7 +642,7 @@
    "xyz": [
     90.1256,
     -6.096,
-    8.24
+    8.53
    ],
    "station": 90.1256
   },
@@ -640,7 +662,7 @@
    "xyz": [
     94.8691,
     -6.096,
-    7.35
+    7.84
    ],
    "station": 94.8691
   },
@@ -660,7 +682,7 @@
    "xyz": [
     99.6125,
     -6.096,
-    6.13
+    6.03
    ],
    "station": 99.6125
   },
@@ -690,7 +712,7 @@
    "xyz": [
     56.9215,
     6.096,
-    6.13
+    6.03
    ],
    "station": 56.9215
   },
@@ -710,7 +732,7 @@
    "xyz": [
     61.6649,
     6.096,
-    7.35
+    7.84
    ],
    "station": 61.6649
   },
@@ -730,7 +752,7 @@
    "xyz": [
     66.4084,
     6.096,
-    8.24
+    8.53
    ],
    "station": 66.4084
   },
@@ -750,7 +772,7 @@
    "xyz": [
     71.1518,
     6.096,
-    8.84
+    8.94
    ],
    "station": 71.1518
   },
@@ -810,7 +832,7 @@
    "xyz": [
     85.3822,
     6.096,
-    8.84
+    8.94
    ],
    "station": 85.3822
   },
@@ -830,7 +852,7 @@
    "xyz": [
     90.1256,
     6.096,
-    8.24
+    8.53
    ],
    "station": 90.1256
   },
@@ -850,7 +872,7 @@
    "xyz": [
     94.8691,
     6.096,
-    7.35
+    7.84
    ],
    "station": 94.8691
   },
@@ -870,7 +892,7 @@
    "xyz": [
     99.6125,
     6.096,
-    6.13
+    6.03
    ],
    "station": 99.6125
   },
@@ -903,10 +925,6 @@
    "b": "N2-U"
   },
   {
-   "a": "N1-B",
-   "b": "N2-U"
-  },
-  {
    "a": "N1-U",
    "b": "N2-B"
   },
@@ -1065,10 +1083,6 @@
   {
    "a": "N9-B",
    "b": "N10-U"
-  },
-  {
-   "a": "N9-U",
-   "b": "N10-B"
   },
   {
    "a": "N9-B",
@@ -1103,10 +1117,6 @@
    "b": "F2-U"
   },
   {
-   "a": "F1-B",
-   "b": "F2-U"
-  },
-  {
    "a": "F1-U",
    "b": "F2-B"
   },
@@ -1265,10 +1275,6 @@
   {
    "a": "F9-B",
    "b": "F10-U"
-  },
-  {
-   "a": "F9-U",
-   "b": "F10-B"
   },
   {
    "a": "F9-B",
@@ -1463,10 +1469,6 @@
    "b": "N13-U"
   },
   {
-   "a": "N12-B",
-   "b": "N13-U"
-  },
-  {
    "a": "N12-U",
    "b": "N13-B"
   },
@@ -1627,10 +1629,6 @@
    "b": "N21-U"
   },
   {
-   "a": "N20-U",
-   "b": "N21-B"
-  },
-  {
    "a": "N20-B",
    "b": "N20-U"
   },
@@ -1663,10 +1661,6 @@
    "b": "F13-U"
   },
   {
-   "a": "F12-B",
-   "b": "F13-U"
-  },
-  {
    "a": "F12-U",
    "b": "F13-B"
   },
@@ -1825,10 +1819,6 @@
   {
    "a": "F20-B",
    "b": "F21-U"
-  },
-  {
-   "a": "F20-U",
-   "b": "F21-B"
   },
   {
    "a": "F20-B",
@@ -2364,19 +2354,5 @@
     "F20-B"
    ]
   }
- ],
- "displayBounds": [
-  [
-   -1.323,
-   105.679
-  ],
-  [
-   -9.6772,
-   9.6772
-  ],
-  [
-   -5.15,
-   9.469
-  ]
  ]
 }

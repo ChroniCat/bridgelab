@@ -46,18 +46,18 @@ test('desktop pairing follows selected bridge and routes the phone into the AR c
   const base='https://chronicat.github.io/bridgelab/';
   const app=harness(base+'target/?bridge=training-span'),get=id=>app.nodes.get(id);
   assert.equal(get('pair-model').value,'training-span');
-  assert.equal(get('phone-camera').href,base+'ar/?mode=camera&bridge=training-span');
-  assert.equal(get('pair-code').src,'./phone-training-span.png');
+  assert.equal(get('phone-camera').href,base+'ar/index.html?mode=camera&bridge=training-span&v=wb3');
+  assert.equal(get('pair-code').src,'./phone-training-span-wb3.png');
   get('pair-open').emit('click');assert.equal(get('pair-dialog').open,true);
   await get('copy-link').emit('click');assert.equal(app.clipboard(),get('phone-camera').href);
   get('pair-close').emit('click');assert.equal(get('pair-dialog').open,false);
   get('pair-model').value='waibaidu';get('pair-model').emit('change');
   assert.equal(app.location.search,'?bridge=waibaidu');
-  assert.equal(get('pair-code').src,'./phone-waibaidu.png');
-  assert.equal(get('pair-url').value,base+'ar/?mode=camera&bridge=waibaidu');
+  assert.equal(get('pair-code').src,'./phone-waibaidu-wb3.png');
+  assert.equal(get('pair-url').value,base+'ar/index.html?mode=camera&bridge=waibaidu&v=wb3');
   const fork=harness('https://example.org/another/path/target/');
   assert.equal(fork.nodes.get('pair-code').hidden,true);
-  assert.equal(fork.nodes.get('pair-url').value,'https://example.org/another/path/ar/?mode=camera&bridge=waibaidu');
+  assert.equal(fork.nodes.get('pair-url').value,'https://example.org/another/path/ar/index.html?mode=camera&bridge=waibaidu&v=wb3');
 });
 
 test('six optically decoded marks retain five fixed references when the screen target moves',()=>{

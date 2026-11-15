@@ -5,15 +5,15 @@
   <meta name="theme-color" content="#f1eee6"><title data-zh="外白渡桥 · 三维模型">Waibaidu Bridge · 3D model</title>
   <script src="../preferences.js"></script>
   <link rel="icon" href="../icon.svg"><link rel="stylesheet" href="../theme.css">
-  <link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./waibaidu.css">
+  <link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./waibaidu.css?v=wb3">
 </head>
 <body>
   <header class="site-head"><div class="wrap nav"><a class="wordmark" href="../"><img src="../icon.svg" width="28" height="28" alt="">BridgeLab</a>
-    <nav aria-label="Navigation" data-zh-aria="导航"><a href="../target/?bridge=waibaidu" data-zh="打开测试板">Open test board</a><div class="pref-controls" data-preferences></div></nav>
+    <nav aria-label="Navigation" data-zh-aria="导航"><a href="../target/?bridge=waibaidu&amp;v=wb3" data-zh="打开测试板">Open test board</a><div class="pref-controls" data-preferences></div></nav>
   </div></header>
   <main class="wrap">
     <div class="mast"><div><p class="place" data-zh="上海 · 苏州河口">Shanghai · Suzhou Creek</p><h1 data-zh="外白渡桥">Waibaidu Bridge</h1></div>
-      <a id="download-glb" class="button primary" href="./waibaidu.glb" download="Waibaidu-Bridge.glb" data-zh="下载三维模型 (.glb)">Download model (.glb)</a></div>
+      <a id="download-glb" class="button primary" href="./waibaidu.glb?v=wb3" download="Waibaidu-Bridge.glb" data-zh="下载三维模型 (.glb)">Download model (.glb)</a></div>
     <section class="model-stage" aria-label="Interactive model" data-zh-aria="可旋转模型">
       <canvas id="geometry" tabindex="0" aria-label="Drag or use arrow keys to rotate the bridge" data-zh-aria="拖动或按方向键旋转桥梁"></canvas>
       <div class="model-controls"><div class="orientation" aria-label="Views" data-zh-aria="视角">
@@ -23,15 +23,20 @@
       </div><div class="orientation"><button type="button" id="zoom-out" aria-label="Zoom out" data-zh-aria="缩小">−</button><button type="button" id="zoom-in" aria-label="Zoom in" data-zh-aria="放大">+</button></div></div>
     </section>
     <div class="caption"><span id="viewer-hint" role="status" data-zh="拖动桥梁可旋转。">Drag the bridge to rotate.</span><span data-zh="依据大修设计和实桥照片重建">Reconstructed from the repair design and photographs</span></div>
+    <figure class="bridge-reference">
+      <img src="./waibaidu-reference.webp" width="1500" height="457" alt="Waibaidu Bridge over Suzhou Creek, with two truss spans meeting over the central pier" data-zh-aria="苏州河上的外白渡桥，两跨钢桁架在中央桥墩处相接">
+      <figcaption><span data-zh="实桥照片 · 2025 年 5 月">Bridge photograph · May 2025</span>
+        <a href="https://commons.wikimedia.org/wiki/File:Waibaidu_Bridge_20250501-1.jpg" rel="noopener" target="_blank" data-zh="Suicasmo 摄 · 查看原图 ↗">Suicasmo · Original photograph ↗</a></figcaption>
+    </figure>
     <dl class="dimensions"><div><dt data-zh="主桁跨度">Main truss spans</dt><dd>2 × 52.178 <small>m</small></dd></div>
       <div><dt data-zh="每跨节间数">Panels per span</dt><dd>11</dd></div>
       <div><dt data-zh="跨中桁高">Midspan truss depth</dt><dd>9.144 <small>m</small></dd></div>
       <div><dt data-zh="两侧主桁中心距">Truss centre spacing</dt><dd>12.192 <small>m</small></dd></div></dl>
     <details><summary data-zh="模型依据与原始资料">About the reconstruction &amp; original sources</summary>
-      <p data-zh="主跨尺寸与分格取自 2009 年大修设计论文。中间节点的标高、杆件截面、桥墩和栏杆等细节按图像近似重建，适用于外观对照与桌面 AR。">The spans and panel layout follow the 2009 repair design. Intermediate joint elevations, member sections, piers and railings are visual approximations for study and tabletop AR.</p>
+      <p data-zh="每跨的斜杆布置依据上海市档案馆藏 1977 年大修图，主跨尺寸取自 2009 年大修设计论文。中间节点的标高、杆件截面、桥墩和栏杆等细节按图像近似重建，适用于外观对照与桌面 AR。">The 1977 repair drawing records the diagonal layout. The main dimensions follow the 2009 repair design. Intermediate joint elevations, member sections, piers and railings are visual approximations for study and tabletop AR.</p>
       <ul><li><a href="https://doc.xuehai.net/b1ddf795ae8994a953c8c2695-2.html" data-zh="大修设计论文 · 第 2 页的结构尺寸">2009 repair design · dimensions on page 2</a></li>
       <li><a href="https://www.shda.gov.cn/archives/gdxw/202601/t20260120_76430.html" data-zh="上海市档案馆 · 1977 年大修图与移桥照片">Shanghai Municipal Archives · 1977 repair drawing and relocation photographs</a></li>
       <li><a href="https://3dwarehouse.sketchup.com/model/588db9c61f38344590f8475808b5503/The-Bund-Waibaidu-Bridge-外白渡桥" data-zh="3D Warehouse · 独立作者的外白渡桥模型">3D Warehouse · independently authored exterior model</a></li>
       <li><a href="https://www.sciengine.com/doi/pdf/CACDD3CD35C645ABA74752E34F29F0D0" data-zh="2004 年有限元模型论文 · 原文 PDF">2004 finite element model paper · PDF</a></li></ul></details>
-  </main><script type="module" src="./waibaidu-page.js"></script>
+  </main><script type="module" src="./waibaidu-page.js?v=wb3"></script>
 </body></html>

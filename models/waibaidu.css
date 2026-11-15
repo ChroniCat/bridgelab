@@ -10,3 +10,7 @@ main.wrap{max-width:1100px;padding-top:clamp(22px,4vw,44px)}
 .dimensions{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:28px 0;padding:20px 0;border-block:1px solid var(--edge)}dt{color:var(--muted);font-size:13px}dd{margin:4px 0 0;font:500 clamp(21px,3vw,34px)/1.3 Georgia,serif;font-variant-numeric:tabular-nums}dd small{font-size:60%}
 details{font-size:14px}summary{cursor:pointer;font-weight:550}details p{margin-top:12px;color:var(--muted);max-width:80ch}details ul{line-height:2;padding-left:20px}details a{text-decoration:underline;text-underline-offset:3px}
 @media(max-width:600px){.mast{align-items:center}.dimensions{grid-template-columns:1fr 1fr}.model-controls{margin:0 8px 9px}.model-stage button,.model-stage button:not(.pref-controls button){padding:5px 9px}.mast .button{padding:8px;font-size:12px}.caption{align-items:flex-start;flex-direction:column}}
+
+.bridge-reference{margin:22px 0 0}.bridge-reference img{display:block;width:100%;height:auto;border-radius:10px}
+.bridge-reference figcaption{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:7px}
+.bridge-reference a{text-decoration:underline;text-underline-offset:3px}

@@ -2,8 +2,9 @@ import {grayFrame,trackPoint,project} from './vision.js';
 import {registerFrame,captureReference,detectBoard} from './auto.js';
 import {replayModel,replaySize,replayK,replaySeeds,drawReplay} from './replay.js';
 import {compare,assessAlert,limitPx,tolerancePx} from './measure.js';
-import {placeBridge,boardClipMatrix,drawMiniature,locateBoard} from './board-model.js';
-import {sketch} from '../models/viewer.js';
+import {placeBridge,boardClipMatrix,drawMiniature,locateBoard} from './board-model.js?v=wb3';
+import {sketch} from '../models/viewer.js?v=wb3';
+import {loadBridgeGeometry} from '../models/bridge-assets.js?v=wb3';
 import {drawBoardSample,boardSampleSize,boardSampleK} from './board-sample.js';
 
 const el=id=>document.getElementById(id);
@@ -102,20 +103,20 @@ function renderLanguage(){
 }
 function updateLinks(){
   const id=choice.value||initialBridge;
-  el('board').href='../target/?bridge='+id;
-  el('switch').href='?mode='+(replay||sample?'camera':'replay')+'&bridge='+id;
-  el('sample-link').href='?mode=board-demo&bridge='+id;
+  el('board').href='../target/?bridge='+id+'&v=wb3';
+  el('switch').href='?mode='+(replay||sample?'camera':'replay')+'&bridge='+id+'&v=wb3';
+  el('sample-link').href='?mode=board-demo&bridge='+id+'&v=wb3';
 }
 async function prepareMesh(seq){
   const canvas=document.createElement('canvas');
   try{
-    const {loadBridgeRenderer}=await import('../models/mesh-renderer.js');
+    const {loadBridgeRenderer}=await import('../models/mesh-renderer.js?v=wb3');
     if(seq!==modelRequest)return;
-    const renderer=await loadBridgeRenderer(canvas);
+    const renderer=loadBridgeRenderer(canvas,selectedModel);
     if(seq!==modelRequest){renderer.destroy();return}
     meshLayer={canvas,renderer};
   }catch{
-    // The existing structural lines continue to work without a GPU renderer.
+    // Model selection and board tracking remain independent.
   }
 }
 async function loadBridge(){
@@ -125,9 +126,7 @@ async function loadBridge(){
   const can=el('preview-canvas');can.getContext('2d').clearRect(0,0,can.width,can.height);
   loadingModel=true;el('model-retry').hidden=true;updateLinks();renderLanguage();
   try{
-    const r=await fetch(new URL('../models/'+id+'.json',import.meta.url));
-    if(!r.ok)throw Error('Model unavailable');
-    const data=await r.json();if(seq!==modelRequest)return;
+    const data=await loadBridgeGeometry(id);if(seq!==modelRequest)return;
     const prepared=placeBridge(data);
     viewer=sketch(can,data);miniature=prepared;selectedModel=data;
     if(id==='waibaidu'&&data.kind==='visual-reconstruction')void prepareMesh(seq);
@@ -135,7 +134,7 @@ async function loadBridge(){
   }catch{if(seq===modelRequest)el('model-retry').hidden=false}
   finally{if(seq===modelRequest){loadingModel=false;renderLanguage()}}
 }
-if(replay){el('switch').href='?mode=camera&bridge='+initialBridge;el('board').hidden=true}
+if(replay){el('switch').href='?mode=camera&bridge='+initialBridge+'&v=wb3';el('board').hidden=true}
 else {
   choice.value=initialBridge;
   el('model-panel').hidden=false;el('sample-badge').hidden=!sample;el('sample-link').hidden=sample;
@@ -263,15 +262,15 @@ function renderBoardBridge(result){
       if(canvas.height!==view.height)canvas.height=view.height;
       const matrix=boardClipMatrix(miniature,result.pose,result.K,canvas.width,canvas.height);
       if(renderer.render(matrix)!==false){
-        ctx.drawImage(canvas,0,0);
+        ctx.drawImage(renderer.source,0,0,canvas.width,canvas.height);
         return;
       }
     }catch{
-      // Fall back to the wire model if compositing fails during an active session.
+      // Continue tracking when the display surface becomes unavailable.
     }
     renderer.destroy();meshLayer=null;
   }
-  drawMiniature(ctx,miniature,result.pose,result.K);
+  if(selectedModel?.id!=='waibaidu')drawMiniature(ctx,miniature,result.pose,result.K);
 }
 function overlay(result,activeRows) {
   if(!replay){

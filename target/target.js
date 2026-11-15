@@ -78,14 +78,15 @@ function renderControls(){
 }
 function syncLink(){
   copied=false;
-  const href=new URL('../ar/',location.href);
+  const href=new URL('../ar/index.html',location.href);
   href.searchParams.set('mode','camera');
   href.searchParams.set('bridge',model.value);
+  href.searchParams.set('v','wb3');
   phone.href=href.href;linkField.value=href.href;
   // These two QR assets encode the deployed Pages URLs. On forks use their own link.
-  code.hidden=href.origin!=='https://chronicat.github.io'||href.pathname!=='/bridgelab/ar/';
+  code.hidden=href.origin!=='https://chronicat.github.io'||href.pathname!=='/bridgelab/ar/index.html';
   if(code.hidden)code.removeAttribute('src');
-  else code.src='./phone-'+model.value+'.png';
+  else code.src='./phone-'+model.value+'-wb3.png';
   renderControls();
 }
 code.addEventListener('error',()=>{code.hidden=true;renderControls()});

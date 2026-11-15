@@ -1,4 +1,5 @@
-import {sketch} from './models/viewer.js';
+import {sketch} from './models/viewer.js?v=wb3';
+import {loadBridgeGeometry} from './models/bridge-assets.js?v=wb3';
 export {sketch};
 
 const picker=document.querySelector('#model');
@@ -17,14 +18,12 @@ document.addEventListener('bridgelab:preferences',()=>{renderStatus();viewer?.dr
 async function load(){
  const bridge=encodeURIComponent(picker.value);
  document.getElementById('field-entry').href='./field/?bridge='+bridge;
- document.getElementById('board-entry').href='./target/?bridge='+bridge;
- document.getElementById('phone-entry').href='./ar/?mode=camera&bridge='+bridge;
+ document.getElementById('board-entry').href='./target/?bridge='+bridge+'&v=wb3';
+ document.getElementById('phone-entry').href='./ar/index.html?mode=camera&bridge='+bridge+'&v=wb3';
  document.getElementById('mesh-entry').style.display=picker.value==='waibaidu'?'':'none';
  const seq=++sequence;reset.disabled=true;activeLength=null;failed=false;renderStatus();
  try{
-  const response=await fetch(new URL('./models/'+encodeURIComponent(picker.value)+'.json',import.meta.url));
-  if(!response.ok)throw Error('Model unavailable');
-  const model=await response.json();if(seq!==sequence)return;
+  const model=await loadBridgeGeometry(picker.value);if(seq!==sequence)return;
   viewer?.destroy();viewer=sketch(canvas,model);activeLength=model.lengthM;renderStatus();
   reset.disabled=false;
  }catch{if(seq===sequence){viewer?.destroy();viewer=null;canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);failed=true;renderStatus()}}
