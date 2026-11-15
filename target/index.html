@@ -2,42 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f8f9fc"><title data-zh="外白渡桥 · 节点位移实验">Waibaidu Bridge · Joint displacement</title>
+  <meta name="theme-color" content="#f8f9fc"><title data-zh="外白渡桥 · 沿桥巡检实验">Waibaidu Bridge · Bridge inspection walk</title>
   <script src="../preferences.js"></script>
-  <link rel="icon" href="../icon.svg"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./joint-lab.css?v=wb4">
+  <link rel="icon" href="../icon.svg"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./walk.css?v=wb5">
 </head>
 <body>
 <header class="site-head"><div class="wrap nav"><a href="../" class="wordmark"><img src="../icon.svg" alt="" width="28" height="28">BridgeLab</a>
   <nav aria-label="Navigation" data-zh-aria="导航"><a href="../models/waibaidu.html?v=wb3" data-zh="三维模型">3D model</a><div class="pref-controls" data-preferences></div></nav></div></header>
 <main class="wrap joint-lab">
   <header class="introduction"><p class="place" data-zh="上海 · 外白渡桥">Shanghai · Waibaidu Bridge</p>
-    <h1 data-zh="桥梁节点位移实验">Bridge joint displacement</h1>
-    <p class="intro-text" data-zh="让左跨的橙色连接点下移，观察与它相连的钢杆。也可以用手机拍屏，测出它移动了多少。">Lower the orange joint in the left span and watch the steelwork connected to it. Film the screen with a phone to measure the movement.</p></header>
-  <section class="experiment" id="board-view" aria-label="Bridge experiment" data-zh-aria="桥梁实验">
-    <figure class="scene">
-      <div class="scene-top"><figcaption data-zh="外白渡桥 · 左跨">Waibaidu Bridge · Left span</figcaption>
-        <button type="button" class="quiet" id="expand-board" aria-pressed="false" data-zh="放大画面">Enlarge view</button></div>
-      <div class="canvas-wrap"><canvas id="board" width="1040" height="550" data-zh-aria="外白渡桥左跨节点位移模拟" aria-label="Simulated displacement of a joint on the left span of Waibaidu Bridge"></canvas>
-        <div class="loading" id="loading" role="status" data-zh="正在载入桥梁…">Loading bridge…</div>
-      </div>
+    <h1 data-zh="沿桥巡检实验">Bridge inspection walk</h1>
+    <p class="intro-text" data-zh="手机对准电脑画面，开始拍摄后，点「自动沿桥移动」。也可以拖动模型改变视角。">Point your phone at this screen. Start recording, then play the walk. Drag the bridge to change your viewpoint.</p></header>
+  <section class="experiment" id="board-view" aria-label="Interactive bridge experiment" data-zh-aria="三维桥梁实验">
+    <figure class="scene"><div class="scene-top"><figcaption data-zh="外白渡桥 · 沿河侧">Waibaidu Bridge · Riverside</figcaption>
+      <div class="view-tools"><button id="reset-view" class="quiet" type="button" data-zh="复位视角">Reset view</button>
+      <button type="button" id="expand-board" class="quiet" aria-pressed="false" data-zh="放大画面">Enlarge view</button></div></div>
+      <div class="canvas-wrap"><canvas id="board" width="1040" height="550" tabindex="0" data-zh-aria="三维桥模。拖动或按方向键旋转，滚轮缩放。" aria-label="3D bridge. Drag or use the arrow keys to rotate. Scroll to zoom."></canvas>
+        <div class="loading" id="loading" role="status" data-zh="正在载入三维桥模…">Loading the 3D bridge…</div></div>
+      <div class="transport"><button id="walk-play" type="button" class="button primary" aria-pressed="false" disabled data-zh="自动沿桥移动">Play walk</button>
+        <label class="route-slider"><span class="sr-only" data-zh="模拟走查进度">Simulated walk progress</span><input id="walk-position" type="range" min="0" max="76.356" step="0.05" value="0" disabled></label>
+        <output id="walk-distance" for="walk-position">0.0 / 76.4 m</output></div>
     </figure>
-    <div class="experiment-controls">
-      <section class="control-group"><div class="group-heading"><h2 data-zh="左跨 · 桥面连接点">Left span · Deck joint</h2><span id="target-state" role="status" aria-live="polite"></span></div>
-        <div class="joint-detail"><canvas id="detail-crop" width="285" height="116" aria-label="Enlarged view of the selected joint" data-zh-aria="所选连接点的局部放大图"></canvas><span class="detail-caption" data-zh="局部放大">Detail</span></div>
-        <button class="button primary" id="move-target" type="button" aria-pressed="false" disabled data-zh="模拟节点下移">Lower the joint</button>
-        <p class="help" data-zh="位移在模型中放大显示，便于观察。">The simulated movement is exaggerated for visibility.</p>
-      </section>
-      <section class="phone-group"><h2 data-zh="用手机测量">Measure with a phone</h2><p data-zh="横过手机，拍全左侧模型画面，再切换节点位置。">Turn your phone sideways and frame the entire model view, then change the joint position here.</p>
-        <button type="button" id="pair-open" class="button" aria-haspopup="dialog" data-zh="显示手机扫码入口">Show phone QR code</button>
-        <a id="phone-camera" href="./mobile.html?v=wb4" data-zh="在本机打开测量相机 ↗">Open camera on this device ↗</a>
-      </section>
-    </div>
+    <aside class="experiment-controls"><section class="control-group"><h2 data-zh="模拟形变">Simulated deformation</h2>
+      <label class="level"><span data-zh="幅度">Amplitude</span><select id="walk-level"><option value="0" data-zh="无形变">None</option><option value="0.21" selected data-zh="轻微">Subtle</option><option value="0.34" data-zh="较明显">More visible</option></select></label>
+      <p class="help" data-zh="橙色节点是观测位置。选择形变幅度，观察手机的轮廓叠加和提醒。">Orange joints are observation points. Change the amplitude and watch the overlay and alerts on your phone.</p>
+    </section><section class="phone-group"><h2 data-zh="手机巡检相机">Phone inspection camera</h2>
+      <p data-zh="手机扫码打开相机，拍摄时让桥身尽量铺满取景框。">Scan to open the camera. Fill the viewfinder with the bridge as you record.</p>
+      <button type="button" id="pair-open" class="button" aria-haspopup="dialog" data-zh="显示手机扫码入口">Show phone QR code</button>
+      <a id="phone-camera" href="./mobile.html?v=wb5" data-zh="在本机打开巡检相机 ↗">Open camera on this device ↗</a>
+    </section></aside>
   </section>
   <footer><a href="./markers.html?v=wb4" data-zh="六标记校验板 ↗">Six-marker test board ↗</a></footer>
 </main>
-<dialog id="pair-dialog" aria-labelledby="pair-title"><h2 id="pair-title" data-zh="手机测量相机">Phone measurement camera</h2>
-  <p data-zh="用手机扫码，允许相机访问。然后关闭此窗口，用手机拍全模型画面。">Scan on your phone and allow camera access. Close this window and frame the entire model view.</p>
+<dialog id="pair-dialog" aria-labelledby="pair-title"><h2 id="pair-title" data-zh="手机巡检相机">Phone inspection camera</h2>
+  <p data-zh="用手机扫码，允许相机访问。然后关闭此窗口，用手机拍摄桌面上的桥模。">Scan on your phone and allow camera access. Close this window and film the bridge model.</p>
   <img id="pair-code" width="224" height="224" alt="Phone camera QR code" data-zh-aria="手机相机二维码" hidden>
   <label for="pair-url" data-zh="手机链接">Phone link</label><input type="url" readonly id="pair-url"><div class="dialog-actions">
     <button id="copy-link" class="button" type="button" data-zh="复制链接">Copy link</button><button id="pair-close" type="button" class="button primary" data-zh="返回桥梁">Back to bridge</button></div></dialog>
-<script type="module" src="./joint-lab.js?v=wb4"></script></body></html>
+<script type="module" src="./walk.js?v=wb5"></script></body></html>

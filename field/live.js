@@ -22,6 +22,9 @@ function render(){
   el('notice').textContent=text(...notice);el('save-status').textContent=text(...savedMessage);
   el('empty').hidden=!!active&&hasFrame;
   el('ready-message').textContent=site?.sections.length?text('Ready for a section walk','可以开始桥段走查'):text('Create the first section reference to start a field walk.','建立第一个桥段基准，即可开始现场走查。');
+  const record=el('record-field');
+  record.hidden=!!active||!site?.sections.length;
+  if(site)record.href='../target/mobile.html?site='+encodeURIComponent(site.id)+'&v=wb5';
   el('start').hidden=!!active;el('finish').hidden=!active;
   el('finish').textContent=active?.preview?text('Close camera','关闭相机'):text('Finish and save','结束并保存');
   el('freeze').textContent=active?.preview?text('Freeze reference frame','定格基准画面'):text('Capture a reference with the camera','用相机采集基准');
@@ -35,7 +38,7 @@ function render(){
   el('setup').hidden=!!active&&(active.source!=='camera'||!!active.run||blind);
   el('field-model-box').hidden=!site||!!active;
   el('tabletop-link').hidden=!!active&&!active.preview;
-  if(site){el('tabletop-link').href=site.id==='training-span'?'../ar/index.html?mode=camera&bridge=training-span&v=wb4':'../target/mobile.html?v=wb4';const s=active?.blind?site.sections.find(b=>b.id===active.trial?.sectionId):lastHit?.baseline||site.sections.find(b=>b.id===params.get('section'))||site.sections.find(b=>b.calibration)||site.sections[0];
+  if(site){el('tabletop-link').href=site.id==='training-span'?'../ar/index.html?mode=camera&bridge=training-span&v=wb4':'../target/mobile.html?v=wb5';const s=active?.blind?site.sections.find(b=>b.id===active.trial?.sectionId):lastHit?.baseline||site.sections.find(b=>b.id===params.get('section'))||site.sections.find(b=>b.calibration)||site.sections[0];
     const p=new URLSearchParams({bridge:site.id});if(s)p.set('section',s.id);
     el('validation-link').href='./validation.html?'+p;
   }

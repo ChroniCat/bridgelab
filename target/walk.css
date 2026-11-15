@@ -1,0 +1,25 @@
+.joint-lab{padding-block:clamp(24px,4vw,50px) 30px}.introduction{margin-bottom:24px}.place{font-size:14px;color:var(--muted);margin-bottom:9px}
+.introduction h1{font-size:clamp(29px,4vw,44px);letter-spacing:-.045em}.intro-text{margin-top:12px;color:var(--muted);max-width:75ch}
+.experiment{display:grid;grid-template-columns:minmax(0,1fr) minmax(235px,26%);align-items:start;gap:clamp(18px,2.7vw,34px)}
+.scene{border:1px solid var(--edge);border-radius:10px;overflow:hidden}.scene{margin:0;background:var(--surface)}
+.scene-top,.dialog-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.scene-top{padding:10px 15px;border-bottom:1px solid var(--edge)}
+.scene-top figcaption{font-size:14px;font-weight:600}.quiet{border:0;background:transparent;color:var(--muted);padding:4px 1px;font:inherit;font-size:13px;cursor:pointer}
+.canvas-wrap{position:relative;background:#f3f2ed}#board{width:100%;height:auto}.loading{position:absolute;inset:0;display:grid;place-content:center;font-size:14px;color:#394e53}.loading[hidden]{display:none}
+.experiment-controls h2,dialog h2{font-size:clamp(16px,1.5vw,20px);font-weight:640;line-height:1.4}.experiment-controls p,dialog p{color:var(--muted);font-size:14px;line-height:1.5}
+body button.button{font-family:inherit;color:var(--text);cursor:pointer}body button.button.primary{color:white}button:disabled{opacity:.48;cursor:wait}
+.control-group .button,.phone-group .button{width:100%}.control-group .help{margin-top:7px;font-size:12px}.phone-group{margin-top:21px;padding-top:16px;border-top:1px solid var(--edge)}.phone-group p{margin:6px 0 10px}
+.phone-group a,footer a{display:inline-block;font-size:13px;text-decoration:underline;text-underline-offset:3px;color:var(--muted)}.phone-group a{margin-top:8px}
+.joint-lab footer{margin-top:22px;text-align:right}.experiment.expanded{position:fixed;inset:0;z-index:10;padding:8px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:100dvh;overflow:auto}
+dialog{padding:22px;max-width:min(360px,calc(100vw - 24px));width:100%;max-height:92svh;overflow:auto;border:1px solid var(--edge);border-radius:12px;background:var(--surface);color:var(--text)}dialog::backdrop{background:#10151ba9}dialog p{margin-top:8px}dialog label{font-size:12px;color:var(--muted)}
+#pair-code{display:block;width:min(205px,100%);height:auto;margin:14px auto;image-rendering:pixelated}#pair-code[hidden]{display:none}#pair-url{width:100%;border:1px solid var(--edge);padding:8px;color:var(--text);background:var(--bg);border-radius:5px}.dialog-actions{justify-content:flex-end;margin-top:12px}
+@media(max-width:760px){.experiment{grid-template-columns:1fr;gap:16px}.experiment-controls{display:grid;grid-template-columns:1fr 1fr;gap:20px}.phone-group{border:0;margin:0;padding:0}.intro-text{font-size:14px}.introduction{margin-bottom:16px}.joint-lab footer{text-align:left}}
+#board{touch-action:none;cursor:grab}#board:active{cursor:grabbing}.view-tools,.transport,.level{display:flex;align-items:center;gap:12px}
+.view-tools .quiet{color:var(--muted)}.scene-top{padding-block:7px}.transport{padding:12px 15px;background:var(--surface);border-top:1px solid var(--edge)}
+.transport .button{min-width:128px}.route-slider{flex:1;min-width:32px;display:grid}.route-slider input{width:100%;accent-color:var(--accent)}
+.transport output{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}.level{justify-content:space-between;margin:12px 0}
+.level select{max-width:70%;background:var(--surface);color:var(--text);padding:7px 12px;border:1px solid var(--edge);border-radius:5px;font:inherit}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.scene figcaption{margin:0}
+.expanded .experiment-controls{display:none}.expanded .scene{width:min(100%,calc((100dvh - 148px)*1.89));flex:none}
+.expanded .scene-top{padding-block:2px}.expanded .transport{padding-block:7px}
+@media(max-width:510px){.transport{flex-wrap:wrap;padding:9px 10px;gap:9px}.transport .button{font-size:13px;min-width:95px}.transport output{font-size:11px}.view-tools{gap:9px}.control-group .help{max-width:none}}
+@media(max-width:510px){.experiment-controls{grid-template-columns:1fr;gap:15px}.phone-group{border-top:1px solid var(--edge);padding-top:13px}.phone-group .button{width:auto}.phone-group a{margin-left:8px}.scene-top{padding:7px 11px}}
