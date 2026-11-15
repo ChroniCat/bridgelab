@@ -1,0 +1,15 @@
+main.joint-phone{max-width:850px;padding-top:clamp(20px,4vw,40px)}
+.joint-phone h1{font-size:clamp(26px,5vw,40px);line-height:1.15;letter-spacing:-.035em;font-weight:650}
+.joint-phone .lead,#guidance,.measurement span{color:var(--muted)}
+.joint-phone .lead{margin:8px 0 18px;max-width:58ch}
+.joint-phone .view{background:#172026;position:relative;aspect-ratio:16/9;min-height:145px;max-height:60vh;border-radius:12px;overflow:hidden}
+.view video,.view canvas{position:absolute;width:100%;height:100%;inset:0;object-fit:contain}
+#observation{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0}
+#tracking-state{font-weight:650;font-size:17px}
+#guidance{margin:3px 0;font-size:14px;max-width:50ch}
+.measurement{display:grid;text-align:right;flex-shrink:0}
+#reading{font-size:clamp(25px,6vw,36px);line-height:1.2;font-variant-numeric:tabular-nums}
+.measurement span{font-size:12px}
+[data-state=moved] #reading{color:#be713a}
+.joint-phone button{font:inherit;cursor:pointer}.joint-phone [hidden]{display:none}
+@media(max-height:480px) and (orientation:landscape){main.joint-phone{padding-block:12px}main.joint-phone h1{font-size:21px}.joint-phone .lead{font-size:13px;margin:3px 0 9px}.joint-phone .view{max-height:56vh}#observation{padding:8px 0}}

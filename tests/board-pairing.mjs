@@ -5,8 +5,8 @@ import vm from 'node:vm';
 import '../lab/board-vision.js';
 
 const load=path=>readFile(new URL(path,import.meta.url),'utf8');
-const target=await load('../target/target.js');
-const markup=await load('../target/index.html');
+const target=await load('../target/marker-board.js');
+const markup=await load('../target/markers.html');
 
 function element() {
   const listeners=new Map(),attrs=new Map();
@@ -44,7 +44,7 @@ function harness(href) {
 
 test('desktop pairing follows selected bridge and routes the phone into the AR camera',async()=>{
   const base='https://chronicat.github.io/bridgelab/';
-  const app=harness(base+'target/?bridge=training-span'),get=id=>app.nodes.get(id);
+  const app=harness(base+'target/markers.html?bridge=training-span'),get=id=>app.nodes.get(id);
   assert.equal(get('pair-model').value,'training-span');
   assert.equal(get('phone-camera').href,base+'ar/index.html?mode=camera&bridge=training-span&v=wb3');
   assert.equal(get('pair-code').src,'./phone-training-span-wb3.png');
@@ -55,13 +55,13 @@ test('desktop pairing follows selected bridge and routes the phone into the AR c
   assert.equal(app.location.search,'?bridge=waibaidu');
   assert.equal(get('pair-code').src,'./phone-waibaidu-wb3.png');
   assert.equal(get('pair-url').value,base+'ar/index.html?mode=camera&bridge=waibaidu&v=wb3');
-  const fork=harness('https://example.org/another/path/target/');
+  const fork=harness('https://example.org/another/path/target/markers.html');
   assert.equal(fork.nodes.get('pair-code').hidden,true);
   assert.equal(fork.nodes.get('pair-url').value,'https://example.org/another/path/ar/index.html?mode=camera&bridge=waibaidu&v=wb3');
 });
 
 test('six optically decoded marks retain five fixed references when the screen target moves',()=>{
-  const app=harness('https://chronicat.github.io/bridgelab/target/');
+  const app=harness('https://chronicat.github.io/bridgelab/target/markers.html');
   const fixed=app.readMarks();assert.equal(fixed.complete,true);
   app.nodes.get('move-target').emit('click');app.advance();
   const moved=app.readMarks();assert.equal(moved.complete,true);

@@ -1,79 +1,43 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0b0c0f">
-  <title data-zh="桥梁桌面实验 · BridgeLab">Bridge tabletop lab · BridgeLab</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f8f9fc"><title data-zh="外白渡桥 · 节点位移实验">Waibaidu Bridge · Joint displacement</title>
   <script src="../preferences.js"></script>
-  <link rel="icon" href="../icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="../theme.css">
-  <link rel="stylesheet" href="../preferences.css">
-  <link rel="stylesheet" href="./target.css">
-  <script defer src="../lab/board-vision.js"></script>
-  <script defer src="./target.js?v=wb3"></script>
+  <link rel="icon" href="../icon.svg"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./joint-lab.css?v=wb4">
 </head>
 <body>
-<header class="site-head"><div class="wrap nav">
-  <a href="../" class="wordmark"><img src="../icon.svg" alt="" width="28" height="28">BridgeLab</a>
-  <nav aria-label="Primary" data-zh-aria="主导航">
-    <a href="../" data-zh="巡检">Inspection</a>
-    <a href="./" aria-current="page" data-zh="屏幕测试板">Screen target</a>
-    <div class="pref-controls" data-preferences></div>
-  </nav>
-</div></header>
-<main class="wrap">
-  <header class="board-head"><h1 data-zh="桥梁桌面实验">Bridge tabletop lab</h1>
-    <p data-zh="用手机拍电脑上的桥，再让一个测点下移，看看手机能否发现变化。">Point your phone at the bridge on this screen, then lower one target and watch the phone measure the change.</p>
-  </header>
-  <section id="board-view" aria-label="Bridge and controls" data-zh-aria="桥梁测试板和操作">
-    <div class="plate">
-      <div class="plate-tools">
-        <label class="chooser" for="pair-model"><span data-zh="桥梁">Bridge</span>
-          <select id="pair-model"><option value="waibaidu" data-zh="外白渡桥">Waibaidu Bridge</option><option value="training-span" data-zh="教学桁架桥">Teaching truss</option></select>
-        </label>
-        <label id="scene-control" class="chooser scene-choice" for="scene-view"><span data-zh="板面">Board</span>
-          <select id="scene-view"><option value="photo" data-zh="实桥照片">Bridge photo</option><option value="elevation" data-zh="模型立面">Model elevation</option></select>
-        </label>
-        <button type="button" id="expand-board" class="button" aria-pressed="false">Enlarge board</button>
+<header class="site-head"><div class="wrap nav"><a href="../" class="wordmark"><img src="../icon.svg" alt="" width="28" height="28">BridgeLab</a>
+  <nav aria-label="Navigation" data-zh-aria="导航"><a href="../models/waibaidu.html?v=wb3" data-zh="三维模型">3D model</a><div class="pref-controls" data-preferences></div></nav></div></header>
+<main class="wrap joint-lab">
+  <header class="introduction"><p class="place" data-zh="上海 · 外白渡桥">Shanghai · Waibaidu Bridge</p>
+    <h1 data-zh="桥梁节点位移实验">Bridge joint displacement</h1>
+    <p class="intro-text" data-zh="让左跨的橙色连接点下移，观察与它相连的钢杆。也可以用手机拍屏，测出它移动了多少。">Lower the orange joint in the left span and watch the steelwork connected to it. Film the screen with a phone to measure the movement.</p></header>
+  <section class="experiment" id="board-view" aria-label="Bridge experiment" data-zh-aria="桥梁实验">
+    <figure class="scene">
+      <div class="scene-top"><figcaption data-zh="外白渡桥 · 左跨">Waibaidu Bridge · Left span</figcaption>
+        <button type="button" class="quiet" id="expand-board" aria-pressed="false" data-zh="放大画面">Enlarge view</button></div>
+      <div class="canvas-wrap"><canvas id="board" width="1040" height="550" data-zh-aria="外白渡桥左跨节点位移模拟" aria-label="Simulated displacement of a joint on the left span of Waibaidu Bridge"></canvas>
+        <div class="loading" id="loading" role="status" data-zh="正在载入桥梁…">Loading bridge…</div>
       </div>
-      <canvas id="board" width="1040" height="740" aria-describedby="marker-key" aria-label="Bridge elevation with four corner anchors, a fixed check at the centre and a movable target to its left" data-zh-aria="桥梁立面及六个标记，四角定位，中央为固定校验点，中央偏左为可移动测点"></canvas>
-      <div class="plate-key" id="marker-key">
-        <span class="key-anchor" data-zh="四角 · 定位">Corners · alignment</span>
-        <span class="key-check" data-zh="中央 · 固定校验点">Centre · fixed check</span>
-        <span class="key-target" data-zh="左侧 · 可移动测点">Left · movable target</span>
-        <a hidden id="photo-credit" href="https://commons.wikimedia.org/wiki/File:Waibaidu_Bridge_20250501-1.jpg" target="_blank" rel="noopener" data-zh="原照 · Suicasmo，CC0 ↗">Photo · Suicasmo, CC0 ↗</a>
-      </div>
+    </figure>
+    <div class="experiment-controls">
+      <section class="control-group"><div class="group-heading"><h2 data-zh="左跨 · 桥面连接点">Left span · Deck joint</h2><span id="target-state" role="status" aria-live="polite"></span></div>
+        <div class="joint-detail"><canvas id="detail-crop" width="285" height="116" aria-label="Enlarged view of the selected joint" data-zh-aria="所选连接点的局部放大图"></canvas><span class="detail-caption" data-zh="局部放大">Detail</span></div>
+        <button class="button primary" id="move-target" type="button" aria-pressed="false" disabled data-zh="模拟节点下移">Lower the joint</button>
+        <p class="help" data-zh="位移在模型中放大显示，便于观察。">The simulated movement is exaggerated for visibility.</p>
+      </section>
+      <section class="phone-group"><h2 data-zh="用手机测量">Measure with a phone</h2><p data-zh="横过手机，拍全左侧模型画面，再切换节点位置。">Turn your phone sideways and frame the entire model view, then change the joint position here.</p>
+        <button type="button" id="pair-open" class="button" aria-haspopup="dialog" data-zh="显示手机扫码入口">Show phone QR code</button>
+        <a id="phone-camera" href="./mobile.html?v=wb4" data-zh="在本机打开测量相机 ↗">Open camera on this device ↗</a>
+      </section>
     </div>
-    <aside class="board-controls">
-      <section class="step">
-        <h2><span class="step-number">1</span><span data-zh="用手机拍整座桥">Frame the whole bridge</span></h2>
-        <p data-zh="在电脑上打开二维码，用手机扫码并允许使用相机。关闭二维码，让六个标记同时入镜。">Open the QR code here. Scan it with your phone and allow camera access. Close the code and frame all six marks.</p>
-        <button type="button" id="pair-open" class="button primary" aria-haspopup="dialog" data-zh="显示手机扫码入口">Show phone QR code</button>
-      </section>
-      <section class="step">
-        <h2><span class="step-number">2</span><span data-zh="让左侧测点下移">Lower the left target</span></h2>
-        <p data-zh="等手机显示「已识别 6/6」和像素读数，再点下方按钮。留意手机上的目标偏差，随后让测点归位再对比。">Wait for “Marks 6/6” and a pixel reading on your phone. Lower the target below, watch the reading, then return it and compare.</p>
-        <button type="button" id="move-target" class="button shift" aria-pressed="false">Lower target</button>
-        <p class="target-state" id="target-state" role="status" aria-live="polite"></p>
-      </section>
-      <a class="detail-link" id="detail-link" href="../models/waibaidu.html?v=wb3" data-zh="查看外白渡桥三维模型 ↗">Explore the Waibaidu model ↗</a>
-    </aside>
   </section>
-  <footer class="board-footer">
-    <a id="phone-camera" href="../ar/index.html?mode=camera&amp;bridge=waibaidu&amp;v=wb3" data-zh="用本机相机拍另一块屏幕">Use this device to film a second screen</a>
-    <a id="print-board" href="../lab/BridgeLab-Board.pdf" data-zh="打印 A4 标记板">Print A4 marker sheet</a>
-  </footer>
-  <img hidden id="art-photo" alt="" src="./waibaidu-photo.webp">
-  <img hidden id="art-waibaidu" alt="" src="./waibaidu-board.webp?v=wb3">
-  <img hidden id="art-training-span" alt="" src="./training-board.webp">
-  <dialog id="pair-dialog" aria-labelledby="pair-title">
-    <h2 id="pair-title" data-zh="在手机上打开 AR 相机">Open AR on your phone</h2>
-    <p id="pair-instruction"></p>
-    <img id="pair-code" width="224" height="224" alt="QR code for the mobile AR camera" hidden>
-    <label class="sr" for="pair-url" data-zh="手机相机链接">Phone camera link</label><input type="url" id="pair-url" readonly>
-    <div class="actions"><button type="button" class="button" id="copy-link">Copy link</button><button type="button" class="button primary" id="pair-close" data-zh="返回测试板">Show board</button></div>
-  </dialog>
+  <footer><a href="./markers.html?v=wb4" data-zh="六标记校验板 ↗">Six-marker test board ↗</a></footer>
 </main>
-</body>
-</html>
+<dialog id="pair-dialog" aria-labelledby="pair-title"><h2 id="pair-title" data-zh="手机测量相机">Phone measurement camera</h2>
+  <p data-zh="用手机扫码，允许相机访问。然后关闭此窗口，用手机拍全模型画面。">Scan on your phone and allow camera access. Close this window and frame the entire model view.</p>
+  <img id="pair-code" width="224" height="224" alt="Phone camera QR code" data-zh-aria="手机相机二维码" hidden>
+  <label for="pair-url" data-zh="手机链接">Phone link</label><input type="url" readonly id="pair-url"><div class="dialog-actions">
+    <button id="copy-link" class="button" type="button" data-zh="复制链接">Copy link</button><button id="pair-close" type="button" class="button primary" data-zh="返回桥梁">Back to bridge</button></div></dialog>
+<script type="module" src="./joint-lab.js?v=wb4"></script></body></html>

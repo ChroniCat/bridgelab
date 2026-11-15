@@ -35,7 +35,7 @@ function render(){
   el('setup').hidden=!!active&&(active.source!=='camera'||!!active.run||blind);
   el('field-model-box').hidden=!site||!!active;
   el('tabletop-link').hidden=!!active&&!active.preview;
-  if(site){el('tabletop-link').href='../ar/index.html?mode=camera&bridge='+(defaultSites.some(s=>s.id===site.id)?site.id:'waibaidu')+'&v=wb3';const s=active?.blind?site.sections.find(b=>b.id===active.trial?.sectionId):lastHit?.baseline||site.sections.find(b=>b.id===params.get('section'))||site.sections.find(b=>b.calibration)||site.sections[0];
+  if(site){el('tabletop-link').href=site.id==='training-span'?'../ar/index.html?mode=camera&bridge=training-span&v=wb4':'../target/mobile.html?v=wb4';const s=active?.blind?site.sections.find(b=>b.id===active.trial?.sectionId):lastHit?.baseline||site.sections.find(b=>b.id===params.get('section'))||site.sections.find(b=>b.calibration)||site.sections[0];
     const p=new URLSearchParams({bridge:site.id});if(s)p.set('section',s.id);
     el('validation-link').href='./validation.html?'+p;
   }
