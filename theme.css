@@ -15,3 +15,6 @@ canvas{display:block}#geometry{width:100%;height:clamp(245px,36vw,420px);touch-a
 @media(max-width:450px){nav{gap:0}nav a{padding:7px 8px;font-size:12px}.wordmark{font-size:19px}#geometry{height:240px}.viewport-bottom{align-items:flex-start;flex-direction:column;gap:11px}.viewport-bottom>.button{width:100%}}
 
 .viewport-bottom .camera-actions{flex-wrap:wrap}
+
+/* Mode labels stay close to the actions, without adding another navigation layer. */
+.mode-hints{display:flex;gap:12px 24px;flex-wrap:wrap;padding:0 22px 17px;color:var(--muted);font-size:12px;line-height:1.5}.mode-hints p{flex:1 1 290px}.mode-hints strong{color:var(--text);font-weight:650;margin-right:7px}@media(max-width:720px){.mode-hints{padding:0 14px 15px;gap:7px}.mode-hints p{flex-basis:100%}}
