@@ -7,7 +7,7 @@
 <nav aria-label="Primary" data-zh-aria="主导航"><a href="./" aria-current="page" data-zh="实地巡检">On-site</a><a href="./review.html" data-zh="巡检记录">Records</a><a id="validation-link" href="./validation.html" data-zh="盲测">Blind test</a><div class="pref-controls" data-preferences></div></nav></div></header>
 <main class="wrap field-main">
 <div class="field-heading"><div><h1 data-zh="实地巡检">On-site inspection</h1></div><label class="site-select"><span class="sr" data-zh="选择桥梁">Choose bridge</span><select id="bridge"></select></label></div>
-<div class="field-mode-note"><p data-zh="这是去真实桥梁时使用的模式：首次使用请先在下方「桥段基准」保存参考照片，再拍摄巡检视频。">For a real bridge: first save section reference photos under “Section baselines” below, then record your inspection.</p><a href="../target/index.html?v=wb5" data-zh="只想测试？去模拟巡检 →">Just testing? Try simulation →</a></div>
+<div class="field-mode-note"><p data-zh="实地拍摄前先建立桥段基准。需要在手机显示桥上位置时，请在建档时选择「关联三维桥段」；未关联的照片无法确定桥上里程。">Before filming on site, save a section baseline. To show position on the bridge, link the reference to a 3D model panel; unlinked photos cannot establish bridge chainage.</p><a href="../target/index.html?v=wb5" data-zh="只想测试？去模拟巡检 →">Just testing? Try simulation →</a></div>
 <section class="field-stage" aria-label="Inspection camera" data-zh-aria="巡检相机"><video id="video" muted playsinline hidden></video><canvas id="live-view" width="480" height="270" aria-label="Registered camera view" data-zh-aria="已配准的相机画面"></canvas>
 <div class="stage-top"><span class="state" id="state" role="status"></span><span class="kind" id="source-type"></span></div>
 <div class="stage-center" id="empty"><img src="../icon.svg" width="40" height="40" alt=""><div id="ready-message"></div></div>
