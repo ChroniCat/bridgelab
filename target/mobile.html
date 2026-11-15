@@ -4,12 +4,13 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080b0c"><title data-zh="桥梁巡检相机 · BridgeLab">Inspection camera · BridgeLab</title>
   <script src="../preferences.js"></script><link rel="icon" href="../icon.svg">
-  <link rel="stylesheet" href="./mobile.css?v=wb5">
+  <link rel="stylesheet" href="./mobile.css?v=wb6">
 </head>
 <body>
   <main id="camera-shell" aria-label="Inspection camera" data-zh-aria="巡检相机">
     <video id="camera" autoplay playsinline muted></video>
     <canvas id="joint-overlay" aria-hidden="true"></canvas>
+    <p class="sr-only" id="model-location-status" role="status" aria-live="polite"></p>
     <header class="camera-top">
       <a id="leave" class="round" href="./index.html?v=wb5" aria-label="Return to desktop experiment" data-zh-aria="返回电脑实验"><svg viewBox="0 0 24 24"><path d="m14 5-7 7 7 7"/></svg></a>
       <div class="clock" id="clock"><span class="rec-dot" aria-hidden="true"></span><time id="timer">00:00</time></div>
@@ -21,7 +22,7 @@
       <div id="observation" role="status" data-state="opening"><span class="signal-dot" aria-hidden="true"></span><span id="tracking-state"></span><span id="reading"></span></div>
       <p id="guidance"></p>
       <div class="shutter-row">
-        <button class="aux" id="overlay-toggle" type="button" aria-pressed="true" aria-label="Toggle virtual model" data-zh-aria="切换虚拟模型">
+        <button class="aux" id="overlay-toggle" type="button" aria-pressed="true" aria-label="Toggle model and bridge position" data-zh-aria="显示或隐藏桥模和位置导航">
           <svg viewBox="0 0 24 24"><path d="m12 2 8.5 5v10L12 22l-8.5-5V7zM3.5 7 12 12l8.5-5M12 12v10"/></svg><span data-zh="模型">Model</span>
         </button>
         <div class="shutter-group"><button type="button" id="shutter"><span></span></button><span id="shutter-label"></span></div>
@@ -47,5 +48,5 @@
       <button class="action new-take" id="new-take" type="button" data-zh="返回取景">Return to camera</button>
     </div>
   </main>
-  <script type="module" src="./mobile.js?v=wb5"></script>
+  <script type="module" src="./mobile.js?v=wb6"></script>
 </body></html>
