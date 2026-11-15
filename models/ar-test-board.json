@@ -1,0 +1,108 @@
+{
+  "format": "bridgelab-ar-v1",
+  "id": "ar-test-board",
+  "name": "Camera test board",
+  "kind": "example",
+  "units": "m",
+  "lengthM": 0.16,
+  "revision": 1,
+  "source": "BridgeLab reference fixture. Four coded corners bound the fixed area, a fifth marker provides an independent check, and a loose sixth marker is the target.",
+  "datum": "Origin at the lower-left control. X increases to the right, Z upwards. The sheet lies in Y = 0.",
+  "accuracy": "Nominal printed dimensions. The public demonstration evaluates image-space residuals in pixels.",
+  "nodes": [
+    {
+      "id": "C1",
+      "role": "control",
+      "xyz": [
+        0,
+        0,
+        0.1
+      ],
+      "station": 0
+    },
+    {
+      "id": "C2",
+      "role": "control",
+      "xyz": [
+        0.16,
+        0,
+        0.1
+      ],
+      "station": 0.16
+    },
+    {
+      "id": "C3",
+      "role": "control",
+      "xyz": [
+        0.16,
+        0,
+        0
+      ],
+      "station": 0.16
+    },
+    {
+      "id": "C4",
+      "role": "control",
+      "xyz": [
+        0,
+        0,
+        0
+      ],
+      "station": 0
+    },
+    {
+      "id": "CHECK",
+      "role": "check",
+      "xyz": [
+        0.08,
+        0,
+        0.05
+      ],
+      "station": 0.08
+    },
+    {
+      "id": "TARGET",
+      "role": "target",
+      "xyz": [
+        0.04,
+        0,
+        0.05
+      ],
+      "station": 0.04
+    }
+  ],
+  "members": [
+    {
+      "a": "C1",
+      "b": "C2"
+    },
+    {
+      "a": "C2",
+      "b": "C3"
+    },
+    {
+      "a": "C3",
+      "b": "C4"
+    },
+    {
+      "a": "C4",
+      "b": "C1"
+    }
+  ],
+  "sections": [
+    {
+      "id": "BOARD",
+      "name": "Full board",
+      "startM": 0,
+      "endM": 0.16,
+      "nodeIds": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "CHECK",
+        "TARGET"
+      ]
+    }
+  ]
+}

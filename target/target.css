@@ -1,0 +1,5 @@
+main.wrap{padding-block:clamp(14px,2.5vw,30px)}
+.board-head,.board-controls{display:flex;justify-content:space-between;align-items:center;gap:16px}.board-head{margin-bottom:14px}.board-head h1{font-size:clamp(23px,3.1vw,35px)}
+canvas{width:100%;height:auto;max-height:calc(100svh - 228px);min-height:120px;object-fit:contain;background:#101115}
+.board-controls{margin-top:14px}.board-controls p{color:var(--muted);font-size:14px}.board-controls p a{color:#bac0ff;text-decoration:underline;text-underline-offset:2px}.board-controls button{font-family:inherit;cursor:pointer}
+@media(max-width:540px){.board-head,.board-controls{gap:10px}.board-controls{align-items:flex-start}.board-head .button,.board-controls button{padding:9px 11px}}

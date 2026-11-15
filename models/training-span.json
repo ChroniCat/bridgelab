@@ -1,0 +1,592 @@
+{
+  "format": "bridgelab-ar-v1",
+  "id": "training-span",
+  "name": "Teaching truss",
+  "kind": "example",
+  "units": "m",
+  "lengthM": 24,
+  "revision": 1,
+  "source": "Synthetic model for exploring camera projection and truss geometry.",
+  "datum": "Local coordinates in metres. X follows the bridge, Y is transverse, Z is up.",
+  "accuracy": "Schematic geometry without a measured accuracy.",
+  "nodes": [
+    {
+      "id": "N0-B",
+      "role": "control",
+      "xyz": [
+        0,
+        -2,
+        0
+      ],
+      "station": 0
+    },
+    {
+      "id": "N0-U",
+      "role": "control",
+      "xyz": [
+        0,
+        -2,
+        2.8
+      ],
+      "station": 0
+    },
+    {
+      "id": "F0-B",
+      "role": "control",
+      "xyz": [
+        0,
+        2,
+        0
+      ],
+      "station": 0
+    },
+    {
+      "id": "F0-U",
+      "role": "control",
+      "xyz": [
+        0,
+        2,
+        2.8
+      ],
+      "station": 0
+    },
+    {
+      "id": "K0",
+      "role": "check",
+      "xyz": [
+        1.8599999999999999,
+        -2,
+        0.868
+      ],
+      "station": 1.8599999999999999
+    },
+    {
+      "id": "Q0",
+      "role": "check",
+      "xyz": [
+        3.66,
+        2,
+        1.708
+      ],
+      "station": 3.66
+    },
+    {
+      "id": "T0",
+      "role": "target",
+      "xyz": [
+        3.4799999999999995,
+        -2,
+        1.6239999999999999
+      ],
+      "station": 3.4799999999999995
+    },
+    {
+      "id": "N1-B",
+      "role": "control",
+      "xyz": [
+        6,
+        -2,
+        0
+      ],
+      "station": 6
+    },
+    {
+      "id": "N1-U",
+      "role": "control",
+      "xyz": [
+        6,
+        -2,
+        2.8
+      ],
+      "station": 6
+    },
+    {
+      "id": "F1-B",
+      "role": "control",
+      "xyz": [
+        6,
+        2,
+        0
+      ],
+      "station": 6
+    },
+    {
+      "id": "F1-U",
+      "role": "control",
+      "xyz": [
+        6,
+        2,
+        2.8
+      ],
+      "station": 6
+    },
+    {
+      "id": "K1",
+      "role": "check",
+      "xyz": [
+        7.859999999999999,
+        -2,
+        1.9319999999999997
+      ],
+      "station": 7.859999999999999
+    },
+    {
+      "id": "Q1",
+      "role": "check",
+      "xyz": [
+        9.66,
+        2,
+        1.0919999999999999
+      ],
+      "station": 9.66
+    },
+    {
+      "id": "T1",
+      "role": "target",
+      "xyz": [
+        9.48,
+        -2,
+        1.176
+      ],
+      "station": 9.48
+    },
+    {
+      "id": "N2-B",
+      "role": "control",
+      "xyz": [
+        12,
+        -2,
+        0
+      ],
+      "station": 12
+    },
+    {
+      "id": "N2-U",
+      "role": "control",
+      "xyz": [
+        12,
+        -2,
+        2.8
+      ],
+      "station": 12
+    },
+    {
+      "id": "F2-B",
+      "role": "control",
+      "xyz": [
+        12,
+        2,
+        0
+      ],
+      "station": 12
+    },
+    {
+      "id": "F2-U",
+      "role": "control",
+      "xyz": [
+        12,
+        2,
+        2.8
+      ],
+      "station": 12
+    },
+    {
+      "id": "K2",
+      "role": "check",
+      "xyz": [
+        13.86,
+        -2,
+        0.868
+      ],
+      "station": 13.86
+    },
+    {
+      "id": "Q2",
+      "role": "check",
+      "xyz": [
+        15.66,
+        2,
+        1.708
+      ],
+      "station": 15.66
+    },
+    {
+      "id": "T2",
+      "role": "target",
+      "xyz": [
+        15.48,
+        -2,
+        1.6239999999999999
+      ],
+      "station": 15.48
+    },
+    {
+      "id": "N3-B",
+      "role": "control",
+      "xyz": [
+        18,
+        -2,
+        0
+      ],
+      "station": 18
+    },
+    {
+      "id": "N3-U",
+      "role": "control",
+      "xyz": [
+        18,
+        -2,
+        2.8
+      ],
+      "station": 18
+    },
+    {
+      "id": "F3-B",
+      "role": "control",
+      "xyz": [
+        18,
+        2,
+        0
+      ],
+      "station": 18
+    },
+    {
+      "id": "F3-U",
+      "role": "control",
+      "xyz": [
+        18,
+        2,
+        2.8
+      ],
+      "station": 18
+    },
+    {
+      "id": "K3",
+      "role": "check",
+      "xyz": [
+        19.86,
+        -2,
+        1.9319999999999997
+      ],
+      "station": 19.86
+    },
+    {
+      "id": "Q3",
+      "role": "check",
+      "xyz": [
+        21.66,
+        2,
+        1.0919999999999999
+      ],
+      "station": 21.66
+    },
+    {
+      "id": "T3",
+      "role": "target",
+      "xyz": [
+        21.48,
+        -2,
+        1.176
+      ],
+      "station": 21.48
+    },
+    {
+      "id": "N4-B",
+      "role": "control",
+      "xyz": [
+        24,
+        -2,
+        0
+      ],
+      "station": 24
+    },
+    {
+      "id": "N4-U",
+      "role": "control",
+      "xyz": [
+        24,
+        -2,
+        2.8
+      ],
+      "station": 24
+    },
+    {
+      "id": "F4-B",
+      "role": "control",
+      "xyz": [
+        24,
+        2,
+        0
+      ],
+      "station": 24
+    },
+    {
+      "id": "F4-U",
+      "role": "control",
+      "xyz": [
+        24,
+        2,
+        2.8
+      ],
+      "station": 24
+    }
+  ],
+  "members": [
+    {
+      "a": "N0-B",
+      "b": "N0-U"
+    },
+    {
+      "a": "F0-B",
+      "b": "F0-U"
+    },
+    {
+      "a": "N0-B",
+      "b": "F0-B"
+    },
+    {
+      "a": "N0-U",
+      "b": "F0-U"
+    },
+    {
+      "a": "N0-B",
+      "b": "N1-B"
+    },
+    {
+      "a": "N0-U",
+      "b": "N1-U"
+    },
+    {
+      "a": "N1-B",
+      "b": "N1-U"
+    },
+    {
+      "a": "N0-B",
+      "b": "N1-U"
+    },
+    {
+      "a": "F0-B",
+      "b": "F1-B"
+    },
+    {
+      "a": "F0-U",
+      "b": "F1-U"
+    },
+    {
+      "a": "F1-B",
+      "b": "F1-U"
+    },
+    {
+      "a": "F0-B",
+      "b": "F1-U"
+    },
+    {
+      "a": "N1-B",
+      "b": "F1-B"
+    },
+    {
+      "a": "N1-U",
+      "b": "F1-U"
+    },
+    {
+      "a": "N1-B",
+      "b": "N2-B"
+    },
+    {
+      "a": "N1-U",
+      "b": "N2-U"
+    },
+    {
+      "a": "N2-B",
+      "b": "N2-U"
+    },
+    {
+      "a": "N1-U",
+      "b": "N2-B"
+    },
+    {
+      "a": "F1-B",
+      "b": "F2-B"
+    },
+    {
+      "a": "F1-U",
+      "b": "F2-U"
+    },
+    {
+      "a": "F2-B",
+      "b": "F2-U"
+    },
+    {
+      "a": "F1-U",
+      "b": "F2-B"
+    },
+    {
+      "a": "N2-B",
+      "b": "F2-B"
+    },
+    {
+      "a": "N2-U",
+      "b": "F2-U"
+    },
+    {
+      "a": "N2-B",
+      "b": "N3-B"
+    },
+    {
+      "a": "N2-U",
+      "b": "N3-U"
+    },
+    {
+      "a": "N3-B",
+      "b": "N3-U"
+    },
+    {
+      "a": "N2-B",
+      "b": "N3-U"
+    },
+    {
+      "a": "F2-B",
+      "b": "F3-B"
+    },
+    {
+      "a": "F2-U",
+      "b": "F3-U"
+    },
+    {
+      "a": "F3-B",
+      "b": "F3-U"
+    },
+    {
+      "a": "F2-B",
+      "b": "F3-U"
+    },
+    {
+      "a": "N3-B",
+      "b": "F3-B"
+    },
+    {
+      "a": "N3-U",
+      "b": "F3-U"
+    },
+    {
+      "a": "N3-B",
+      "b": "N4-B"
+    },
+    {
+      "a": "N3-U",
+      "b": "N4-U"
+    },
+    {
+      "a": "N4-B",
+      "b": "N4-U"
+    },
+    {
+      "a": "N3-U",
+      "b": "N4-B"
+    },
+    {
+      "a": "F3-B",
+      "b": "F4-B"
+    },
+    {
+      "a": "F3-U",
+      "b": "F4-U"
+    },
+    {
+      "a": "F4-B",
+      "b": "F4-U"
+    },
+    {
+      "a": "F3-U",
+      "b": "F4-B"
+    },
+    {
+      "a": "N4-B",
+      "b": "F4-B"
+    },
+    {
+      "a": "N4-U",
+      "b": "F4-U"
+    }
+  ],
+  "sections": [
+    {
+      "id": "S0",
+      "name": "Section 1",
+      "startM": 0,
+      "endM": 12,
+      "nodeIds": [
+        "N0-B",
+        "N0-U",
+        "F0-B",
+        "F0-U",
+        "K0",
+        "Q0",
+        "T0",
+        "N1-B",
+        "N1-U",
+        "F1-B",
+        "F1-U",
+        "K1",
+        "Q1",
+        "T1",
+        "N2-B",
+        "N2-U",
+        "F2-B",
+        "F2-U"
+      ]
+    },
+    {
+      "id": "S1",
+      "name": "Section 2",
+      "startM": 6,
+      "endM": 18,
+      "nodeIds": [
+        "N1-B",
+        "N1-U",
+        "F1-B",
+        "F1-U",
+        "K1",
+        "Q1",
+        "T1",
+        "N2-B",
+        "N2-U",
+        "F2-B",
+        "F2-U",
+        "K2",
+        "Q2",
+        "T2",
+        "N3-B",
+        "N3-U",
+        "F3-B",
+        "F3-U"
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "Section 3",
+      "startM": 12,
+      "endM": 24,
+      "nodeIds": [
+        "N2-B",
+        "N2-U",
+        "F2-B",
+        "F2-U",
+        "K2",
+        "Q2",
+        "T2",
+        "N3-B",
+        "N3-U",
+        "F3-B",
+        "F3-U",
+        "K3",
+        "Q3",
+        "T3",
+        "N4-B",
+        "N4-U",
+        "F4-B",
+        "F4-U"
+      ]
+    }
+  ]
+}

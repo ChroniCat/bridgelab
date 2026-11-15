@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c0d10"><meta name="description" content="Explore real-time bridge model alignment and displacement screening with a browser camera or an interactive replay.">
+<title>BridgeLab · Bridge inspection</title>
+<link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./theme.css"><script type="module" src="./home.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head"><div class="wrap nav">
+<a href="./" class="wordmark"><img src="./icon.svg" alt="" width="28" height="28">BridgeLab</a>
+<nav aria-label="Primary"><a href="./" aria-current="page">Inspection</a><a href="./target/">Screen target</a></nav>
+</div></header>
+<main class="wrap" id="main">
+<header class="intro"><h1>Bridge inspection</h1></header>
+<section class="viewport" aria-label="Example model viewer">
+<div class="viewport-toolbar">
+<label class="chooser"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 8.5 5v10L12 22l-8.5-5V7zM3.5 7 12 12l8.5-5M12 12v10"/></svg><select id="model" aria-label="Choose a model"><option value="waibaidu">Waibaidu Bridge</option><option value="training-span">Teaching truss</option></select></label>
+<button type="button" id="reset" class="icon-button" title="Reset model view" aria-label="Reset model view"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2.7 7M4 5v6h6"/></svg></button>
+</div>
+<canvas id="geometry" tabindex="0" aria-label="3D truss model. Drag or use arrow keys to rotate. Press Home to reset."></canvas>
+<div class="viewport-bottom"><span id="model-status" role="status">Loading example model…</span>
+<a href="./ar/?mode=replay" class="button primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg>Run synthetic replay</a></div>
+</section>
+<section class="camera-block" aria-labelledby="camera-heading"><div class="camera-title">
+<div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="12.5" r="3"/></svg></div>
+<div><h2 id="camera-heading">Live camera test</h2><p>Open the screen target on a second device, then aim your phone at all six marks.</p></div></div>
+<div class="camera-actions"><a class="button" href="./target/">Screen target</a><a class="button" href="./ar/?mode=camera">Open camera <span aria-hidden="true">↗</span></a></div>
+</section>
+<noscript><p>Enable JavaScript to view the model and run the inspection.</p></noscript>
+</main></body></html>

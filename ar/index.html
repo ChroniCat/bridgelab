@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0c0f">
+  <title>Inspection · BridgeLab</title>
+  <link rel="icon" href="../icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./inspection.css">
+</head>
+<body>
+<header class="bar"><div class="top">
+  <a class="brand" href="../"><img src="../icon.svg" width="27" height="27" alt="">BridgeLab</a>
+  <nav aria-label="Main"><a href="../">Overview</a><a href="../target/">Test board</a></nav>
+</div></header>
+<main>
+  <div class="heading"><h1 id="title">Board inspection</h1>
+    <a id="switch" href="?mode=replay">Watch replay <span aria-hidden="true">↗</span></a>
+  </div>
+  <section aria-label="Inspection view" class="card">
+    <div id="stage" class="stage">
+      <video id="camera" muted playsinline autoplay aria-hidden="true"></video>
+      <canvas id="view" width="640" height="360" aria-label="Live image with projected model"></canvas>
+      <span id="status" role="status">Ready</span>
+      <div id="idle" class="idle"><button id="start">Start camera</button></div>
+    </div>
+    <div class="controls"><p id="hint" aria-live="polite">Keep all six board markers in view.</p>
+      <button id="stop" hidden>Stop</button>
+    </div>
+  </section>
+  <div class="links"><a id="board" href="../target/" target="_blank" rel="noopener">Open test board <span aria-hidden="true">↗</span></a>
+    <details><summary>Session record</summary><div class="record"><p id="stats">No frames yet.</p>
+      <button id="export" disabled>Download JSON</button></div></details>
+  </div>
+  <noscript>Enable JavaScript to inspect the live images.</noscript>
+</main>
+<script type="module" src="./inspection.js"></script>
+</body></html>
