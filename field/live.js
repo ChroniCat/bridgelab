@@ -20,7 +20,11 @@ function render(){
   el('notice').textContent=text(...notice);el('save-status').textContent=text(...savedMessage);
   el('empty').hidden=!!active&&hasFrame;
   el('ready-message').textContent=site?.sections.length?text('Ready for a section walk','可以开始桥段走查'):text('Create the first section reference to start a field walk.','建立第一个桥段基准，即可开始现场走查。');
-  el('start').hidden=!!active;el('finish').hidden=!active;el('demo').disabled=!!active||pending||!ready;
+  el('start').hidden=!!active;el('finish').hidden=!active;
+  el('finish').textContent=active?.preview?text('Close camera','关闭相机'):text('Finish and save','结束并保存');
+  el('freeze').textContent=active?.preview?text('Freeze reference frame','定格基准画面'):text('Capture a reference with the camera','用相机采集基准');
+  el('freeze').disabled=pending||!!active&&!hasFrame;
+  el('demo').disabled=!!active||pending||!ready;
   el('video-label').hidden=!!active;el('video-file').disabled=pending||!ready;el('start').disabled=pending||!ready;el('bridge').disabled=!!active||pending||!ready;
   const synthetic=active?.source==='synthetic',blind=active?.blind;
   el('source-type').textContent=active?(synthetic?text('Synthetic','合成演示'):active.source==='video'?text('Recorded video','实拍视频'):text('Live camera','实时相机')):'';
@@ -44,7 +48,7 @@ async function useSite(stored){
   const url=new URL(location.href);url.searchParams.set('bridge',site.id);url.searchParams.delete('section');history.replaceState(null,'',url);
   lastHit=null;syncChooser();render();
 }
-const editor=manageBaselines({getSite:()=>site,onSite:useSite,cameraFrame:()=>active?.source==='camera'&&hasFrame?referenceFrame(raw):null,notify});
+const editor=manageBaselines({getSite:()=>site,onSite:useSite,cameraFrame:()=>active?.preview&&hasFrame?referenceFrame(raw):null,openPreview:()=>start('camera',null,true),notify});
 el('bridge').onchange=()=>{editor.cancel();lastHit=null;const id=el('bridge').value;site=sites.find(s=>s.id===id)||defaultSites.find(s=>s.id===id);const u=new URL(location.href);u.searchParams.set('bridge',site.id);u.searchParams.delete('section');history.replaceState(null,'',u);syncChooser();notify('','');render()};
 function stopMedia(){
   if(cameraStream)cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;video.pause();video.srcObject=null;
@@ -69,7 +73,7 @@ async function stop(why=null){
   render();
 }
 el('finish').onclick=()=>stop();el('export-run').onclick=()=>{if(last)exportRunFile(last.run,last.site)};
-async function start(source,file=null){
+async function start(source,file=null,previewRequested=false){
   if(active||pending||!ready)return;pending=true;const seq=++epoch;const startingSite=site;let walk=null,runSite=site;
   try{
     notify('','');savedMessage=['',''];setState('Opening…','正在开启…');render();editor.cancel();tracker.reset();lastHit=null;sectionName=reading='';
@@ -92,9 +96,10 @@ async function start(source,file=null){
     if(seq!==epoch||startingSite!==site){stopMedia();return}
     view.width=raw.width;view.height=raw.height;
     const settings=cameraStream?.getVideoTracks()[0]?.getSettings()||{};
-    const run=runSite.sections.length&&!blind?createRun(runSite,{source,frameWidth:raw.width,frameHeight:raw.height,
+    const preview=source==='camera'&&!blind&&(previewRequested||!runSite.sections.length);
+    const run=runSite.sections.length&&!blind&&!preview?createRun(runSite,{source,frameWidth:raw.width,frameHeight:raw.height,
       camera:{width:settings.width??null,height:settings.height??null,facingMode:settings.facingMode??null,zoom:settings.zoom??null},handoffs:[]}):null;
-    active={source,site:runSite,walk,run,settings,blind,trial,started:performance.now(),elapsed:0,lastTime:-1,lastVideo:-1,lastCheckpoint:0,
+    active={source,site:runSite,walk,run,settings,preview,blind,trial,started:performance.now(),elapsed:0,lastTime:-1,lastVideo:-1,lastCheckpoint:0,
       alerts:new Map(),conditions:new Map(),previousSection:null,lastSeen:-1,missingFrom:null,lastFrameAt:performance.now(),stalled:false};
     last=null;hasFrame=false;el('setup').open=source==='camera'&&!run&&!blind;setState('Locating','正在定位');
     if(run)await writeCheckpoint(active);
@@ -142,7 +147,7 @@ function measure(a,hit){
 function processFrame(a,stamp){
   const image=ctx.getImageData(0,0,raw.width,raw.height);
   display.drawImage(raw,0,0);
-  if(!a.site.sections.length){setState('Camera ready','相机已就绪');return}
+  if(a.preview){setState('Camera ready','相机已就绪');return}
   const hit=tracker.observe(image,a.site.sections,stamp),m=measure(a,hit);lastHit=hit.ok?hit:null;
   if(!a.blind&&a.source==='camera'){
     const next=trialStatus();if(next?.bridgeId===a.site.id&&['armed','capturing','sealed'].includes(next.status)){stop(['A blind trial is ready. Open the camera again to collect it.','盲测已就绪，请重新开启相机开始采集。']);return}

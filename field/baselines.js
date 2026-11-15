@@ -20,7 +20,7 @@ const errors={
   points:['Select all six points away from the image edges.','请在画面边缘以内选满六个点。']
 };
 const cornerNames=[['upper left','左上角'],['upper right','右上角'],['lower right','右下角'],['lower left','左下角'],['independent stable check','独立且稳定的检查点'],['monitoring target','监测目标']];
-export function manageBaselines({getSite,onSite,cameraFrame,notify}){
+export function manageBaselines({getSite,onSite,cameraFrame,openPreview,notify}){
   let frozen=null,busy=false;
   const mode=()=>el('picker-mode').value;
   const picker=attachPicker(el('picker'),(_,reason)=>{if(frozen)renderForm();if(reason&&errors[reason])notify(...errors[reason])});
@@ -65,7 +65,7 @@ export function manageBaselines({getSite,onSite,cameraFrame,notify}){
     }catch{notify('This photo could not be read. Try JPEG or PNG.','无法读取这张照片，请尝试 JPG 或 PNG。')}
     finally{URL.revokeObjectURL(objectUrl);e.target.value=''}
   };
-  el('freeze').onclick=()=>{const f=cameraFrame();if(f)edit(f);else notify('Open the camera and wait for a frame first.','请先开启相机，等画面出现后再取帧。')};
+  el('freeze').onclick=async()=>{const f=cameraFrame();if(f){edit(f);notify('','')}else await openPreview()};
   el('save-section').onclick=async()=>{
     if(!frozen||busy)return;const site=getSite(),name=el('section-input').value.trim();
     if(!name||site.sections.some(s=>s.name.toLowerCase()===name.toLowerCase())){notify('Enter a unique member or section ID.','请输入尚未使用的构件或桥段编号。');el('section-input').focus();return}
