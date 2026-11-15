@@ -1,5 +1,6 @@
 import {createWalkSession} from './walk-session.js?v=wb5';
 import {coverRect,recordVideo,lastTake} from './walk-video.js?v=wb5';
+import {bridgeHudState,bridgeHudLabel,drawBridgeHud} from './bridge-hud.js?v=wb6';
 
 const get=id=>document.getElementById(id);
 const t=(en,zh)=>window.BridgePrefs.text(en,zh);
@@ -11,7 +12,7 @@ const options=get('options'),shutter=get('shutter'),checkbox=get('use-gps');
 let stream,tracker,loadingTracker,frameRequest,recording,session,preview,watch=null;
 let state='off',sourceEpoch=0,lastScan=-Infinity,lastVideoTime=-1,lastGood=false;
 let lastResult=null,overlayOn=true,toast=null,resultTake=null,filmURL=null,started=0,archiveIssue=false;
-let screenSize=null,displayTimer='';
+let screenSize=null,displayTimer='',lastKnownStation=null,navAnnounced='';
 let sessionMode='idle';
 const clock=seconds=>{
   const s=Math.max(0,Math.floor(seconds||0));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
@@ -29,7 +30,7 @@ function refreshControls() {
   shell.dataset.capture=sessionMode;
   get('observation').dataset.state=alertNow?'alert':locked?'tracked':live?'locating':state;
   const looking=field?t('Face a saved bridge section','对准已存基准的桥段'):t('Aim at the bridge model','对准电脑上的桥模');
-  text('tracking-state',locked?(field?t('Section aligned','桥段已对齐'):t('Model aligned','模型已对齐')):
+  text('tracking-state',locked?(field?(lastResult?.modelAligned?t('Model aligned','模型已配准'):t('Section recognized','桥段已识别')):t('Model aligned','模型已对齐')):
     live?(lastGood?t('Reacquiring bridge','重新识别中'):looking):t('Inspection camera','巡检相机'));
   text('reading',largest?place(largest)+' · '+px(Math.abs(largest.displacementPx))+' px':'');
   text('guidance',live&&!locked?(field?t('Keep its fixed features in frame.','把桥段的固定特征拍入画面。'):
@@ -62,9 +63,8 @@ function refreshControls() {
 }
 
 function paintModel(ctx,w,h,now,film=false) {
-  if(!lastResult?.ok||!sampled.width)return;
-  const sx=w/sampled.width,sy=h/sampled.height;
-  if(overlayOn){
+  if(lastResult?.ok&&sampled.width&&overlayOn){
+    const sx=w/sampled.width,sy=h/sampled.height;
     ctx.beginPath();
     for(const [x1,y1,x2,y2] of lastResult.segments||[]){ctx.moveTo(x1*sx,y1*sy);ctx.lineTo(x2*sx,y2*sy)}
     ctx.lineJoin='round';ctx.lineWidth=Math.max(1,Math.min(w,h)*.0024);
@@ -77,6 +77,12 @@ function paintModel(ctx,w,h,now,film=false) {
       ctx.strokeStyle=alarm?'#ffab56':'#b9ffee';ctx.stroke();
       if(alarm&&m.expected){ctx.beginPath();ctx.moveTo(m.expected[0]*sx,m.expected[1]*sy);ctx.lineTo(x*sx,y*sy);ctx.stroke()}
     }
+  }
+  // Keep the bridge reference and its position indicator visible throughout
+  // recording. An unregistered thumbnail is not projected into the scenery.
+  if(overlayOn&&stream&&(site==='waibaidu'||!field)){
+    const guide=bridgeHudState(lastResult,lastKnownStation,field);
+    drawBridgeHud(ctx,w,h,guide,t);
   }
   if(film&&toast&&now<toast.until){
     const size=Math.max(16,Math.round(w*.024));
@@ -106,6 +112,10 @@ function scan(now) {
   try {result=tracker.observe(input.getImageData(0,0,w,h))}
   catch {result={ok:false}}
   lastResult=result;lastGood||=result.ok;
+  if(result.ok&&Number.isFinite(result.stationM))lastKnownStation=result.stationM;
+  const guide=bridgeHudState(result,lastKnownStation,field);
+  const marker=guide.kind+'/'+(guide.displayStationM===null?'':Math.floor(guide.displayStationM/5))+'/'+guide.section;
+  if(marker!==navAnnounced){navAnnounced=marker;text('model-location-status',bridgeHudLabel(guide,t))}
   const events=(session||preview)?.addObservation(result,now)||[];
   if(!result.ok)toast=null;
   if(events.length){const e=events.reduce((a,b)=>a.maxPx>b.maxPx?a:b);toast={...e,until:now+2900}}
@@ -137,7 +147,7 @@ function releaseCamera() {
   ++sourceEpoch;
   cancelAnimationFrame(frameRequest);
   stream?.getTracks().forEach(track=>track.stop());stream=null;video.srcObject=null;
-  tracker?.reset?.();preview=null;lastGood=false;lastResult=null;toast=null;screenSize=null;
+  tracker?.reset?.();preview=null;lastGood=false;lastResult=null;lastKnownStation=null;navAnnounced='';toast=null;screenSize=null;
   lastScan=-Infinity;lastVideoTime=-1;
   pen.clearRect(0,0,overlay.width,overlay.height);
 }
