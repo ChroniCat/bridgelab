@@ -72,7 +72,9 @@ function openPhoneLink() {
   else dialog.setAttribute('open','');
 }
 get('pair-open').addEventListener('click',openPhoneLink);
-get('pair-close').addEventListener('click', () => { if (dialog.close) dialog.close(); else dialog.removeAttribute('open'); });
+function closePhoneLink() { if (dialog.close) dialog.close(); else dialog.removeAttribute('open'); }
+get('pair-close').addEventListener('click',closePhoneLink);
+get('pair-dismiss').addEventListener('click',closePhoneLink);
 get('copy-link').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(link.value);
