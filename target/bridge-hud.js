@@ -21,9 +21,10 @@ export function bridgeHudState(result,lastStationM=null,field=false) {
 export function bridgeHudLabel(state,text=(en)=>en) {
   if(state.kind==='located') {
     const spanName=state.stationM<span?text('Left span','左跨'):text('Right span','右跨');
-    return text('Located','已定位')+' · '+spanName+' '+state.stationM.toFixed(1)+' m';
+    const provenance=state.field&&!state.registered?text('Section mapped','参考桥段定位'):text('Located','已定位');
+    return provenance+' · '+spanName+' '+state.stationM.toFixed(1)+' m';
   }
-  if(state.kind==='section')return text('Section matched · chainage unlinked','已识别桥段 · 未关联里程');
+  if(state.kind==='section')return text('Section','桥段')+' '+state.section.slice(0,9)+' · '+text('no chainage','未标里程');
   if(state.kind==='stale')return text('Last seen, position unverified','上次位置 · 当前未定位')+' '+state.displayStationM.toFixed(1)+' m';
   return text('Searching · position unknown','定位中 · 位置未知');
 }
