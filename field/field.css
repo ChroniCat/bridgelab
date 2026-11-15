@@ -5,3 +5,5 @@
 .field-ar-link{margin-bottom:12px}.field-ar-link a{color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:14px}
 #field-preview-canvas{width:100%;height:clamp(190px,38vw,360px);touch-action:pan-y;background:var(--surface);border-radius:8px;margin-bottom:12px}
 .field-main .baseline-fields .model-direction{display:flex;align-items:center;gap:7px;align-self:end}.field-main .model-direction input{width:auto}.field-main .model-direction span{margin:0}
+
+.field-mode-note{display:flex;justify-content:space-between;align-items:baseline;gap:8px 20px;flex-wrap:wrap;margin:-4px 0 17px;color:var(--muted);font-size:13px;line-height:1.55}.field-mode-note p{max-width:70ch}.field-mode-note a{color:var(--text);text-decoration:underline;text-underline-offset:3px;white-space:nowrap}

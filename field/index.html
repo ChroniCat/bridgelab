@@ -1,12 +1,13 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0c0d10"><title data-zh="现场巡检 · BridgeLab">Field inspection · BridgeLab</title>
-<script src="../preferences.js"></script><link rel="icon" href="../icon.svg"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./field.css">
+<meta name="theme-color" content="#0c0d10"><title data-zh="实地巡检 · BridgeLab">On-site inspection · BridgeLab</title>
+<script src="../preferences.js"></script><link rel="icon" href="../icon.svg"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css"><link rel="stylesheet" href="./field.css?v=mode2">
 <script type="module" src="./live.js?v=wb5"></script></head>
 <body><header class="site-head"><div class="wrap nav"><a href="../" class="wordmark"><img src="../icon.svg" width="28" height="28" alt="">BridgeLab</a>
-<nav aria-label="Primary" data-zh-aria="主导航"><a href="./" aria-current="page" data-zh="现场巡检">Field</a><a href="./review.html" data-zh="巡检记录">Records</a><a id="validation-link" href="./validation.html" data-zh="盲测">Blind test</a><div class="pref-controls" data-preferences></div></nav></div></header>
+<nav aria-label="Primary" data-zh-aria="主导航"><a href="./" aria-current="page" data-zh="实地巡检">On-site</a><a href="./review.html" data-zh="巡检记录">Records</a><a id="validation-link" href="./validation.html" data-zh="盲测">Blind test</a><div class="pref-controls" data-preferences></div></nav></div></header>
 <main class="wrap field-main">
-<div class="field-heading"><div><a class="back" href="../" data-zh="‹ 项目首页">‹ Overview</a><h1 data-zh="现场巡检">Field inspection</h1></div><label class="site-select"><span class="sr" data-zh="选择桥梁">Choose bridge</span><select id="bridge"></select></label></div>
+<div class="field-heading"><div><a class="back" href="../" data-zh="‹ 项目首页">‹ Overview</a><h1 data-zh="实地巡检">On-site inspection</h1></div><label class="site-select"><span class="sr" data-zh="选择桥梁">Choose bridge</span><select id="bridge"></select></label></div>
+<div class="field-mode-note"><p data-zh="这是去真实桥梁时使用的模式：首次使用请先在下方「桥段基准」保存参考照片，再拍摄巡检视频。">For a real bridge: first save section reference photos under “Section baselines” below, then record your inspection.</p><a href="../target/index.html?v=wb5" data-zh="只想测试？去模拟巡检 →">Just testing? Try simulation →</a></div>
 <section class="field-stage" aria-label="Inspection camera" data-zh-aria="巡检相机"><video id="video" muted playsinline hidden></video><canvas id="live-view" width="480" height="270" aria-label="Registered camera view" data-zh-aria="已配准的相机画面"></canvas>
 <div class="stage-top"><span class="state" id="state" role="status"></span><span class="kind" id="source-type"></span></div>
 <div class="stage-center" id="empty"><img src="../icon.svg" width="40" height="40" alt=""><div id="ready-message"></div></div>
