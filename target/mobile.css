@@ -38,3 +38,6 @@ dialog p{font-size:12px;color:#bac5c2;margin:0 0 16px}dialog a{display:block;mar
 @media(orientation:landscape) and (max-height:560px){.camera-bottom{bottom:max(10px,env(safe-area-inset-bottom));inset-inline:0}.shutter-row{position:fixed;right:max(15px,env(safe-area-inset-right));top:50%;transform:translateY(-40%);width:76px;display:flex;flex-direction:column;gap:7px}.aux{min-height:34px}.aux svg{width:16px;height:16px}.camera-bottom #guidance{margin:3px auto 2px}.camera-top{right:max(16px,env(safe-area-inset-right))}.rec-dot{width:6px;height:6px}#shutter{width:58px;height:58px}#alert-toast{top:62px}}
 
 .peak small{font-size:12px;color:#aebfba}
+
+/* Screen-reader status for the bridge model navigation drawn onto the video canvas. */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}
