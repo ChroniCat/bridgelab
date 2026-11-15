@@ -13,3 +13,5 @@ canvas{display:block}#geometry{width:100%;height:clamp(245px,36vw,420px);touch-a
 :focus-visible{outline:2px solid #a9b0ff;outline-offset:4px}.skip{position:absolute;top:-60px;left:10px;z-index:2;background:#292b35;padding:8px}.skip:focus{top:7px}
 @media(max-width:720px){.wrap{width:calc(100% - 34px)}.nav{min-height:57px}.camera-block{align-items:flex-start;flex-direction:column;gap:14px}.camera-actions{align-self:stretch}.camera-actions a{flex:1}.intro{margin-bottom:16px}.viewport-toolbar,.viewport-bottom{padding:13px 14px}.feature-icon{display:none}}
 @media(max-width:450px){nav{gap:0}nav a{padding:7px 8px;font-size:12px}.wordmark{font-size:19px}#geometry{height:240px}.viewport-bottom{align-items:flex-start;flex-direction:column;gap:11px}.viewport-bottom>.button{width:100%}}
+
+.viewport-bottom .camera-actions{flex-wrap:wrap}

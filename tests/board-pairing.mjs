@@ -25,7 +25,7 @@ function harness(href) {
   const nodes=new Map([...markup.matchAll(/\bid="([^"]+)"/g)].map(m=>[m[1],element()]));
   let animation,clipboard;
   const pixels=new Uint8Array(520*370);
-  const context={fillStyle:'',fillRect(x,y,w,h){
+  const context={fillStyle:'',fillText(){},fillRect(x,y,w,h){
     const value=this.fillStyle==='#fff'?255:9;
     for(let row=Math.round(y/2);row<Math.round((y+h)/2);row++)pixels.fill(value,row*520+Math.round(x/2),row*520+Math.round((x+w)/2));
   }};

@@ -10,6 +10,7 @@ let viewer,sequence=0,activeLength=null,failed=false;
 function renderStatus(){
  if(failed)status.textContent=text('Cannot load this model. Check your connection and reload.','模型加载失败，请检查网络后刷新。');
  else if(activeLength===null)status.textContent=text('Loading example model…','正在加载示例模型…');
+ else if(picker.value==='waibaidu')status.textContent=text('Exterior reconstruction · two 52.178 m spans','实桥外观重建 · 两跨各 52.178 米');
  else status.textContent=text('Schematic model · '+activeLength+' m','示意模型 · '+activeLength+' 米');
 }
 document.addEventListener('bridgelab:preferences',()=>{renderStatus();viewer?.draw?.()});
@@ -18,6 +19,7 @@ async function load(){
  document.getElementById('field-entry').href='./field/?bridge='+bridge;
  document.getElementById('board-entry').href='./target/?bridge='+bridge;
  document.getElementById('phone-entry').href='./ar/?mode=camera&bridge='+bridge;
+ document.getElementById('mesh-entry').style.display=picker.value==='waibaidu'?'':'none';
  const seq=++sequence;reset.disabled=true;activeLength=null;failed=false;renderStatus();
  try{
   const response=await fetch(new URL('./models/'+encodeURIComponent(picker.value)+'.json',import.meta.url));
