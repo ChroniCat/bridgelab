@@ -103,7 +103,7 @@ function renderLanguage(){
 }
 function updateLinks(){
   const id=choice.value||initialBridge;
-  el('board').href='../target/?bridge='+id+'&v=wb3';
+  el('board').href='../target/markers.html?bridge='+id+'&v=wb4';
   el('switch').href='?mode='+(replay||sample?'camera':'replay')+'&bridge='+id+'&v=wb3';
   el('sample-link').href='?mode=board-demo&bridge='+id+'&v=wb3';
 }

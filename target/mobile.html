@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f8f9fc">
+  <title data-zh="桥梁节点观测 · BridgeLab">Joint camera · BridgeLab</title>
+  <script src="../preferences.js"></script>
+  <link rel="icon" href="../icon.svg"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../preferences.css">
+  <link rel="stylesheet" href="./mobile.css?v=wb4">
+</head>
+<body>
+  <header class="site-head"><div class="wrap nav">
+    <a class="wordmark" href="../"><img src="../icon.svg" width="28" height="28" alt="">BridgeLab</a>
+    <nav><a href="./?bridge=waibaidu&amp;v=wb4" data-zh="电脑实验">Desktop experiment</a><div data-preferences class="pref-controls"></div></nav>
+  </div></header>
+  <main class="wrap joint-phone">
+    <h1 data-zh="观察桥上节点">Watch the bridge joint</h1>
+    <p class="lead" data-zh="用后置相机对准电脑上的外白渡桥模型，让画面装下左岸桥台、橙色节点和中间桥墩。">Aim the rear camera at the model on your computer. Include the left abutment, orange joint and middle pier.</p>
+    <div class="view"><video id="camera" playsinline muted></video><canvas id="joint-overlay" aria-hidden="true"></canvas></div>
+    <section id="observation" data-state="idle" aria-live="polite">
+      <div><h2 id="tracking-state"></h2><p id="guidance"></p></div>
+      <div class="measurement"><strong id="reading">—</strong><span data-zh="模型画面像素">model pixels</span></div>
+    </section>
+    <button class="button primary" id="camera-start" data-zh="打开后置相机">Open rear camera</button>
+    <button class="button" id="camera-stop" hidden data-zh="关闭相机">Stop camera</button>
+  </main>
+  <script type="module" src="./mobile.js?v=wb4"></script>
+</body></html>
