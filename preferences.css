@@ -1,0 +1,42 @@
+/* The display controls are shared by the viewer, camera and physical target. */
+:root{--ui-control:#1c1d24;--ui-border:#363944;--ui-label:#e1e3ee;--ui-hover:#2a2d38;--ui-focus:#aab2ff}
+.pref-controls{display:inline-flex;align-items:center;flex:none;gap:3px;border-left:1px solid var(--ui-border);padding-left:10px;margin-left:5px}
+.pref-controls button{background:transparent;color:var(--ui-label);border:1px solid transparent;border-radius:6px;min-width:38px;height:38px;font:600 13px/1.15 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:0 6px;display:inline-grid;place-items:center;cursor:pointer;white-space:nowrap}
+.pref-controls button:hover{background:var(--ui-hover);border-color:var(--ui-border)}
+.pref-controls button:focus-visible{outline:2px solid var(--ui-focus);outline-offset:2px}
+.pref-controls svg{display:block;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.top nav{align-items:center}
+:root[data-theme="light"]{color-scheme:light;--bg:#f8f9fc;--surface:#fff;--text:#1c2030;--muted:#555d70;--edge:#d3d7e1;--accent:#4d56b8;--ui-control:#fff;--ui-border:#cfd3df;--ui-label:#363d50;--ui-hover:#e9ecf4;--ui-focus:#494fae;background:var(--bg);color:var(--text)}
+[data-theme="light"] .site-head,[data-theme="light"] .bar{background:#fff;border-color:var(--edge)}
+[data-theme="light"] .wordmark,[data-theme="light"] .brand{color:var(--text)}
+[data-theme="light"] a{color:#3f4874}
+[data-theme="light"] a:hover{color:#2f347c}
+[data-theme="light"] nav a{color:var(--muted)}
+[data-theme="light"] nav a:hover,[data-theme="light"] nav a[aria-current]{color:var(--text);background:#e9ecf4}
+[data-theme="light"] .viewport{border-color:var(--edge);background:radial-gradient(ellipse at 52% 53%,#f6f7fc 0%,#eff1f7 58%,#e9ecf5 100%)}
+[data-theme="light"] .viewport-bottom,[data-theme="light"] .controls{border-color:var(--edge)}
+[data-theme="light"] .chooser,[data-theme="light"] .chooser select{background:transparent;color:var(--text)}
+[data-theme="light"] .chooser option{background:#fff;color:var(--text)}
+[data-theme="light"] .icon-button,[data-theme="light"] .feature-icon,[data-theme="light"] .button,[data-theme="light"] button:not(.pref-controls button){background:var(--ui-control);border-color:var(--ui-border);color:var(--ui-label)}
+[data-theme="light"] .icon-button:hover,[data-theme="light"] .button:hover,[data-theme="light"] button:not(.pref-controls button):hover{background:var(--ui-hover)}
+[data-theme="light"] .button.primary,[data-theme="light"] .idle button{color:#fff;background:var(--accent);border-color:#4d56b8}
+[data-theme="light"] .button.primary:hover,[data-theme="light"] .idle button:hover{background:#3b439c;color:#fff}
+[data-theme="light"] .card,[data-theme="light"] .skip{background:var(--surface);border-color:var(--edge)}
+[data-theme="light"] .stage{background:#e8ebf2}
+[data-theme="light"] .stage::before{border-color:#cdd1dc}
+[data-theme="light"] #status{background:#fffffff2;border-color:#bfc4d3;color:#292f42}
+[data-theme="light"] #status[data-state="tracking"]{background:#e1f7ed;border-color:#6aa68c;color:#20543e}
+[data-theme="light"] #status[data-state="alert"]{background:#ffe5e8;border-color:#c87980;color:#872435}
+[data-theme="light"] .controls p,[data-theme="light"] .record p,[data-theme="light"] summary{color:var(--muted)}
+[data-theme="light"] .board-controls p a{color:#3c48a0}
+[data-theme="light"] .board-head+canvas{background:#e3e6ee}
+[data-theme="light"] :focus-visible{outline-color:var(--ui-focus)}
+@media(max-width:600px){.pref-controls{gap:0;margin-left:2px;padding-left:5px}.pref-controls button{min-width:35px;min-height:40px}.top nav{gap:8px}}
+@media(max-width:480px){
+ .site-head .nav,.bar .top{position:relative;display:flex;flex-wrap:wrap;align-content:center;justify-content:flex-start;gap:4px 0;min-height:84px;height:auto;padding-block:7px}
+ .nav .wordmark,.top .brand{min-height:33px}
+ .site-head nav,.bar nav{width:100%;display:flex;align-items:center;gap:5px;min-height:28px}
+ .site-head nav a,.bar nav a{font-size:13px;padding:4px 9px;border-radius:5px;line-height:1.3}
+ .pref-controls{position:absolute;right:0;top:5px;margin:0;padding:0;border:0}
+ .pref-controls button{min-width:40px;min-height:40px}
+}

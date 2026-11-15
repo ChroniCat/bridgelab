@@ -4,35 +4,37 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0c0f">
+  <script src="../preferences.js"></script>
   <title>Inspection · BridgeLab</title>
   <link rel="icon" href="../icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./inspection.css">
+  <link rel="stylesheet" href="../preferences.css">
 </head>
 <body>
 <header class="bar"><div class="top">
   <a class="brand" href="../"><img src="../icon.svg" width="27" height="27" alt="">BridgeLab</a>
-  <nav aria-label="Main"><a href="../">Overview</a><a href="../target/">Test board</a></nav>
+  <nav aria-label="Main" data-zh-aria="主导航"><a href="../" data-zh="首页">Overview</a><a href="../target/" data-zh="测试板">Test board</a><div class="pref-controls" data-preferences></div></nav>
 </div></header>
 <main>
   <div class="heading"><h1 id="title">Board inspection</h1>
-    <a id="switch" href="?mode=replay">Watch replay <span aria-hidden="true">↗</span></a>
+    <a id="switch" href="?mode=replay"><span id="switch-label">Watch replay</span> <span aria-hidden="true">↗</span></a>
   </div>
-  <section aria-label="Inspection view" class="card">
+  <section aria-label="Inspection view" data-zh-aria="巡检画面" class="card">
     <div id="stage" class="stage">
       <video id="camera" muted playsinline autoplay aria-hidden="true"></video>
-      <canvas id="view" width="640" height="360" aria-label="Live image with projected model"></canvas>
+      <canvas id="view" width="640" height="360" aria-label="Live image with projected model" data-zh-aria="叠加模型的巡检画面"></canvas>
       <span id="status" role="status">Ready</span>
       <div id="idle" class="idle"><button id="start">Start camera</button></div>
     </div>
     <div class="controls"><p id="hint" aria-live="polite">Keep all six board markers in view.</p>
-      <button id="stop" hidden>Stop</button>
+      <button id="stop" data-zh="结束" hidden>Stop</button>
     </div>
   </section>
-  <div class="links"><a id="board" href="../target/" target="_blank" rel="noopener">Open test board <span aria-hidden="true">↗</span></a>
-    <details><summary>Session record</summary><div class="record"><p id="stats">No frames yet.</p>
-      <button id="export" disabled>Download JSON</button></div></details>
+  <div class="links"><a id="board" href="../target/" target="_blank" rel="noopener"><span data-zh="打开测试板">Open test board</span> <span aria-hidden="true">↗</span></a>
+    <details><summary data-zh="巡检记录">Session record</summary><div class="record"><p id="stats">No frames yet.</p>
+      <button id="export" data-zh="下载 JSON" disabled>Download JSON</button></div></details>
   </div>
-  <noscript>Enable JavaScript to inspect the live images.</noscript>
+  <noscript>Enable JavaScript to inspect the live images. 请启用 JavaScript 以显示巡检画面。</noscript>
 </main>
 <script type="module" src="./inspection.js"></script>
 </body></html>

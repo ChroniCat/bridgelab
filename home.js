@@ -11,6 +11,7 @@ export function sketch(canvas,model){
  let yaw=originYaw,pitch=originPitch,drag=null;
  function draw(){
   if(!canvas.isConnected)return;
+  const light=document.documentElement.dataset.theme==='light';
   const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;
   const ratio=Math.min(2,window.devicePixelRatio||1),cw=Math.round(w*ratio),ch=Math.round(h*ratio);
   if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}
@@ -28,7 +29,7 @@ export function sketch(canvas,model){
   ctx.lineWidth=.65;
   for(let i=-15;i<=15;i++){
    const q=i*.075;
-   ctx.strokeStyle=i%4===0?'rgba(130,135,167,.105)':'rgba(130,135,167,.052)';
+   ctx.strokeStyle=light?(i%4===0?'rgba(78,88,125,.17)':'rgba(78,88,125,.08)'):(i%4===0?'rgba(130,135,167,.105)':'rgba(130,135,167,.052)');
    ctx.beginPath();
    for(const [a,b] of [[[-1.125,q,floor],[1.125,q,floor]],[[q,-1.125,floor],[q,1.125,floor]]]){
     ctx.moveTo(...xyz(a).slice(0,2));ctx.lineTo(...xyz(b).slice(0,2))
@@ -45,13 +46,13 @@ export function sketch(canvas,model){
    const near=1-((p[2]+q[2])/2-dRange[0])/Math.max(.0001,dRange[1]-dRange[0]);
    const long=Math.abs(points[a][0]-points[b][0])>.02,flat=Math.abs(points[a][2]-points[b][2])<.003;
    const thick=thickness*(long&&flat?1.05:.74),dy=long&&flat?thick*.45:thick*.30;
-   const v=Math.round(95+77*near);
+   const v=Math.round(light?147-52*near:95+77*near);
    ctx.strokeStyle=`rgb(${v-51},${v-46},${v-13})`;ctx.lineWidth=thick+1;ctx.beginPath();ctx.moveTo(p[0],p[1]+dy);ctx.lineTo(q[0],q[1]+dy);ctx.stroke();
    ctx.strokeStyle=`rgb(${v+10},${v+12},${Math.min(245,v+47)})`;ctx.lineWidth=thick*.58;ctx.beginPath();ctx.moveTo(p[0],p[1]-dy*.7);ctx.lineTo(q[0],q[1]-dy*.7);ctx.stroke();
    ctx.strokeStyle=`rgba(232,233,255,${.16+near*.24})`;ctx.lineWidth=.7;ctx.stroke();
   }
   if(!edges.length||isBoard){
-   ctx.fillStyle='#c0c1ed';for(const [i,[x,y]] of displayed.entries()){if(i%Math.max(1,Math.ceil(points.length/1600)))continue;ctx.beginPath();ctx.arc(x,y,isBoard?3:2,0,Math.PI*2);ctx.fill()}
+   ctx.fillStyle=light?'#465393':'#c0c1ed';for(const [i,[x,y]] of displayed.entries()){if(i%Math.max(1,Math.ceil(points.length/1600)))continue;ctx.beginPath();ctx.arc(x,y,isBoard?3:2,0,Math.PI*2);ctx.fill()}
   }
  }
  const resize=new ResizeObserver(draw);resize.observe(canvas);
@@ -62,22 +63,29 @@ export function sketch(canvas,model){
  function reset(){yaw=originYaw;pitch=originPitch;draw()}
  canvas.onkeydown=e=>{const axes={ArrowLeft:[-.12,0],ArrowRight:[.12,0],ArrowUp:[0,-.1],ArrowDown:[0,.1]};
   if(e.key==='Home'){e.preventDefault();reset();return}if(!axes[e.key])return;e.preventDefault();yaw+=axes[e.key][0];pitch=Math.max(-1.38,Math.min(1.38,pitch+axes[e.key][1]));draw()};
- draw();return {reset,destroy(){resize.disconnect();canvas.onpointerdown=canvas.onpointermove=canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=canvas.onkeydown=null}}
+ draw();return {reset,draw,destroy(){resize.disconnect();canvas.onpointerdown=canvas.onpointermove=canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=canvas.onkeydown=null}}
 }
 const picker=document.querySelector('#model');
 const canvas=document.querySelector('#geometry');
 const status=document.querySelector('#model-status');
 const reset=document.querySelector('#reset');
-let viewer,sequence=0;
+const {text}=window.BridgePrefs;
+let viewer,sequence=0,activeLength=null,failed=false;
+function renderStatus(){
+ if(failed)status.textContent=text('Cannot load this model. Check your connection and reload.','模型加载失败，请检查网络后刷新。');
+ else if(activeLength===null)status.textContent=text('Loading example model…','正在加载示例模型…');
+ else status.textContent=text('Schematic model · '+activeLength+' m','示意模型 · '+activeLength+' 米');
+}
+document.addEventListener('bridgelab:preferences',()=>{renderStatus();viewer?.draw?.()});
 async function load(){
- const seq=++sequence;reset.disabled=true;status.textContent='Loading example model…';
+ const seq=++sequence;reset.disabled=true;activeLength=null;failed=false;renderStatus();
  try{
   const response=await fetch(new URL('./models/'+encodeURIComponent(picker.value)+'.json',import.meta.url));
   if(!response.ok)throw Error('Model unavailable');
   const model=await response.json();if(seq!==sequence)return;
-  viewer?.destroy();viewer=sketch(canvas,model);status.textContent='Schematic model · '+model.lengthM+' m';
+  viewer?.destroy();viewer=sketch(canvas,model);activeLength=model.lengthM;renderStatus();
   reset.disabled=false;
- }catch{if(seq===sequence){viewer?.destroy();viewer=null;canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);status.textContent='Cannot load this model. Check your connection and reload.'}}
+ }catch{if(seq===sequence){viewer?.destroy();viewer=null;canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);failed=true;renderStatus()}}
 }
 reset.addEventListener('click',()=>viewer?.reset());
 picker.addEventListener('change',load);

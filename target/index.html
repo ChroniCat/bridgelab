@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b0c0f"><title>Screen target · BridgeLab</title>
-<link rel="icon" href="../icon.svg" type="image/svg+xml"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="./target.css">
+<meta name="theme-color" content="#0b0c0f"><title data-zh="屏幕测试板 · BridgeLab">Screen target · BridgeLab</title>
+<script src="../preferences.js"></script>
+<link rel="icon" href="../icon.svg" type="image/svg+xml"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="./target.css"><link rel="stylesheet" href="../preferences.css">
 <script defer src="../lab/board-vision.js"></script><script defer src="./target.js"></script>
 </head>
 <body><header class="site-head"><div class="wrap nav"><a href="../" class="wordmark"><img src="../icon.svg" alt="" width="28" height="28">BridgeLab</a>
-<nav aria-label="Primary"><a href="../">Inspection</a><a href="./" aria-current="page">Screen target</a></nav></div></header>
-<main class="wrap"><header class="board-head"><h1>Screen target</h1><a class="button" href="../lab/BridgeLab-Board.pdf">Print A4 board</a></header>
-<canvas width="1040" height="740" aria-label="A six-marker board with a movable target on the left of the centre mark"></canvas>
-<div class="board-controls"><p>On your phone, open the <a href="../ar/?mode=camera">live camera test</a> and frame the entire board.</p>
-<button type="button" class="button primary" aria-pressed="false">Move target</button></div></main></body></html>
+<nav aria-label="Primary" data-zh-aria="主导航"><a href="../" data-zh="巡检">Inspection</a><a href="./" aria-current="page" data-zh="屏幕测试板">Screen target</a><div class="pref-controls" data-preferences></div></nav></div></header>
+<main class="wrap"><header class="board-head"><h1 data-zh="屏幕测试板">Screen target</h1><a class="button" id="print-board" href="../lab/BridgeLab-Board.pdf" data-zh="打印 A4 测试板">Print A4 board</a></header>
+<canvas width="1040" height="740" aria-label="A six-marker board with a movable target on the left of the centre mark" data-zh-aria="六个编码标记组成的测试板，中央标记左侧是可移动目标。"></canvas>
+<div class="board-controls"><p><span data-zh="用手机打开">On your phone, open the </span><a href="../ar/?mode=camera" data-zh="相机实测">live camera test</a><span data-zh="，让整块测试板进入画面。"> and frame the entire board.</span></p>
+<button type="button" id="move-target" class="button primary" aria-pressed="false">Move target</button></div></main></body></html>

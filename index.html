@@ -3,30 +3,31 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0c0d10"><meta name="description" content="Explore real-time bridge model alignment and displacement screening with a browser camera or an interactive replay.">
-<title>BridgeLab · Bridge inspection</title>
-<link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./theme.css"><script type="module" src="./home.js"></script>
+<title data-zh="BridgeLab · 桥梁巡检">BridgeLab · Bridge inspection</title>
+<script src="./preferences.js"></script>
+<link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./theme.css"><link rel="stylesheet" href="./preferences.css"><script type="module" src="./home.js"></script>
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
+<a class="skip" href="#main" data-zh="跳到内容">Skip to content</a>
 <header class="site-head"><div class="wrap nav">
 <a href="./" class="wordmark"><img src="./icon.svg" alt="" width="28" height="28">BridgeLab</a>
-<nav aria-label="Primary"><a href="./" aria-current="page">Inspection</a><a href="./target/">Screen target</a></nav>
+<nav aria-label="Primary" data-zh-aria="主导航"><a href="./" aria-current="page" data-zh="巡检">Inspection</a><a href="./target/" data-zh="屏幕测试板">Screen target</a><div class="pref-controls" data-preferences></div></nav>
 </div></header>
 <main class="wrap" id="main">
-<header class="intro"><h1>Bridge inspection</h1></header>
-<section class="viewport" aria-label="Example model viewer">
+<header class="intro"><h1 data-zh="桥梁巡检">Bridge inspection</h1></header>
+<section class="viewport" aria-label="Example model viewer" data-zh-aria="示例模型查看器">
 <div class="viewport-toolbar">
-<label class="chooser"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 8.5 5v10L12 22l-8.5-5V7zM3.5 7 12 12l8.5-5M12 12v10"/></svg><select id="model" aria-label="Choose a model"><option value="waibaidu">Waibaidu Bridge</option><option value="training-span">Teaching truss</option></select></label>
-<button type="button" id="reset" class="icon-button" title="Reset model view" aria-label="Reset model view"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2.7 7M4 5v6h6"/></svg></button>
+<label class="chooser"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 8.5 5v10L12 22l-8.5-5V7zM3.5 7 12 12l8.5-5M12 12v10"/></svg><select id="model" aria-label="Choose a model" data-zh-aria="选择模型"><option value="waibaidu" data-zh="外白渡桥">Waibaidu Bridge</option><option value="training-span" data-zh="教学桁架桥">Teaching truss</option></select></label>
+<button type="button" id="reset" class="icon-button" title="Reset model view" aria-label="Reset model view" data-zh-aria="复位模型视角" data-zh-title="复位模型视角"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2.7 7M4 5v6h6"/></svg></button>
 </div>
-<canvas id="geometry" tabindex="0" aria-label="3D truss model. Drag or use arrow keys to rotate. Press Home to reset."></canvas>
+<canvas id="geometry" tabindex="0" aria-label="3D truss model. Drag or use arrow keys to rotate. Press Home to reset." data-zh-aria="三维桁架模型。拖动或使用方向键旋转，按 Home 键复位。"></canvas>
 <div class="viewport-bottom"><span id="model-status" role="status">Loading example model…</span>
-<a href="./ar/?mode=replay" class="button primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg>Run synthetic replay</a></div>
+<a href="./ar/?mode=replay" class="button primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg><span data-zh="播放模拟巡检">Run synthetic replay</span></a></div>
 </section>
 <section class="camera-block" aria-labelledby="camera-heading"><div class="camera-title">
 <div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="12.5" r="3"/></svg></div>
-<div><h2 id="camera-heading">Live camera test</h2><p>Open the screen target on a second device, then aim your phone at all six marks.</p></div></div>
-<div class="camera-actions"><a class="button" href="./target/">Screen target</a><a class="button" href="./ar/?mode=camera">Open camera <span aria-hidden="true">↗</span></a></div>
+<div><h2 id="camera-heading" data-zh="相机实测">Live camera test</h2><p data-zh="在另一台设备上打开屏幕测试板，用手机对准全部六个标记。">Open the screen target on a second device, then aim your phone at all six marks.</p></div></div>
+<div class="camera-actions"><a class="button" href="./target/" data-zh="屏幕测试板">Screen target</a><a class="button" href="./ar/?mode=camera"><span data-zh="打开相机">Open camera</span> <span aria-hidden="true">↗</span></a></div>
 </section>
-<noscript><p>Enable JavaScript to view the model and run the inspection.</p></noscript>
+<noscript><p>请启用 JavaScript 以查看模型并开始巡检。 / Enable JavaScript to view the model and run the inspection.</p></noscript>
 </main></body></html>

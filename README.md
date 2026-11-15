@@ -1,9 +1,10 @@
 # BridgeLab
 A browser-based AR bridge inspection demonstration. The model viewer contains schematic geometry. Camera measurements in the public demo are image-plane differences in pixels. The camera mode uses the coded test board.
 
-- Open the homepage and select **Play replay** to see a simulated inspection.
+- Open the homepage and select **Run synthetic replay** to see a simulated inspection.
+- Use the header controls to switch between English and Chinese or light and dark. The site starts with your browser language and device theme, then remembers your choices on this browser.
 - For a live test, open **Screen target** on a computer and start the camera on a phone. Keep all six codes in view, then move the target using the computer.
-- A two-page printable board is included in `lab/BridgeLab-Board.pdf`.
+- The screen target links to a two-page printable board in the selected language.
 - Camera processing runs on the device. The browser can export a run locally.
 
 ## Hosting
