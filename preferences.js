@@ -79,6 +79,56 @@
     updateStatic();
     document.dispatchEvent(new CustomEvent('bridgelab:preferences', {detail: {language, theme: theme()}}));
   }
+
+  // Site-wide document breadcrumbs. The full-screen camera keeps its back arrow.
+  const breadcrumbBase = new URL('.', document.currentScript?.src || location.href);
+  function mountBreadcrumbs() {
+    if (!location.pathname.startsWith(breadcrumbBase.pathname)) return;
+    const page = location.pathname.slice(breadcrumbBase.pathname.length).replace(/\/$/, '');
+    const simulated = {en: 'Simulated inspection', zh: '模拟巡检', href: 'target/index.html?v=wb5'};
+    const onSite = {en: 'On-site inspection', zh: '实地巡检', href: 'field/'};
+    const current = (en, zh) => ({en, zh});
+    const pages = {
+      'target': [current('Simulated inspection', '模拟巡检')],
+      'target/index.html': [current('Simulated inspection', '模拟巡检')],
+      'target/markers.html': [simulated, current('Six-marker test board', '六标记校验板')],
+      'models/waibaidu.html': [current('Waibaidu Bridge model', '外白渡桥三维模型')],
+      'ar': [simulated, current('Six-marker AR', '六标记 AR')],
+      'ar/index.html': [simulated, current('Six-marker AR', '六标记 AR')],
+      'field': [current('On-site inspection', '实地巡检')],
+      'field/index.html': [current('On-site inspection', '实地巡检')],
+      'field/review.html': [onSite, current('Inspection records', '巡检记录')],
+      'field/validation.html': [onSite, current('Displacement blind test', '位移盲测')]
+    };
+    const trail = pages[page], main = document.querySelector('main');
+    if (!trail || !main || main.querySelector(':scope > nav.breadcrumbs')) return;
+    const nav = document.createElement('nav');
+    nav.className = 'breadcrumbs';
+    nav.setAttribute('aria-label', 'Breadcrumb');
+    nav.dataset.zhAria = '面包屑导航';
+    const list = document.createElement('ol');
+    const steps = [{en: 'Home', zh: '首页', href: ''}, ...trail];
+    steps.forEach((step, i) => {
+      const item = document.createElement('li');
+      if (i) {
+        const separator = document.createElement('span');
+        separator.className = 'breadcrumbs-separator';
+        separator.setAttribute('aria-hidden', 'true');
+        separator.textContent = '›';
+        item.append(separator);
+      }
+      const node = step.href === undefined ? document.createElement('span') : document.createElement('a');
+      node.textContent = step.en;
+      node.dataset.zh = step.zh;
+      if (step.href === undefined) node.setAttribute('aria-current', 'page');
+      else node.href = new URL(step.href, breadcrumbBase).href;
+      item.append(node);
+      list.append(item);
+    });
+    nav.append(list);
+    main.prepend(nav);
+  }
+
   function initialize() {
     for (const controls of document.querySelectorAll('[data-preferences]')) {
       controls.setAttribute('role', 'group');
@@ -99,6 +149,7 @@
       });
       controls.append(languageButton, themeButton);
     }
+    mountBreadcrumbs();
     mounted = true;
     apply();
   }
