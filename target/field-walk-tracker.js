@@ -50,12 +50,18 @@ export async function createFieldWalkTracker(siteId) {
     const full=p=>[p[0]*sx,p[1]*sy];
     const binding=base.modelBinding,model=binding?models.get(referenceKey(binding)):null;
     const pose=model?projectFieldModel(model,binding,hit,w,h):null;
+    // A matched field photograph identifies a saved section, but it does not
+    // locate the user on the bridge unless that section is explicitly bound to
+    // a Waibaidu model panel. Use the panel midpoint only as approximate chainage.
+    const panel=model?.data?.id==='waibaidu'?model.panels.get(binding?.panelId):null;
+    const stationM=panel?.xyz?.length===4
+      ?panel.xyz.reduce((sum,point)=>sum+point[0],0)/4:null;
     const segments=[];
     if(pose)for(const [a,b] of model.edges){
       const p=project(pose.pose,pose.K,a),q=project(pose.pose,pose.K,b);
       if(p&&q)segments.push([...full(p),...full(q)]);
     }
-    return {ok:true,stationM:null,segments,measurements:[{
+    return {ok:true,stationM,sectionName:base.name||base.id,modelAligned:!!pose,segments,measurements:[{
       id:base.id,labelZh:base.name||base.id,labelEn:base.name||base.id,point:full(hit.observedTarget),expected:full(hit.predicted),
       displacementPx:Math.hypot(target[0]-x,target[1]-y),thresholdPx:7
     }]};
