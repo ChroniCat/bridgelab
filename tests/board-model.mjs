@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {locateBoard,placeBridge,drawMiniature} from '../ar/board-model.js';
+import {locateBoard,placeBridge,boardClipMatrix,drawMiniature} from '../ar/board-model.js';
 import {project} from '../ar/vision.js';
 const fixture=name=>JSON.parse(readFileSync(new URL('../models/'+name+'.json',import.meta.url)));
 const board=fixture('ar-test-board'),bridge=fixture('waibaidu');
@@ -54,4 +54,23 @@ test('Missing or inconsistent landmarks stop the relevant operation without reta
   }
   const moved=observe(.25,{offset:16});
   assert.ok(moved.pose);assert.equal(moved.verified,true);assert.ok(Math.abs(moved.rows[0].px-16)<1e-6);
+});
+
+test('GLB projection places every reconstructed truss joint on its tracked image location',()=>{
+  const miniature=placeBridge(bridge);
+  const intrinsics={cx:287,cy:207,fx:600,fy:554};
+  for(const angle of [-.54,.04,.62]){
+    const pose=poseFor(angle);
+    const m=boardClipMatrix(miniature,pose,intrinsics,...size);
+    for(const {id,xyz:[x,y,z]} of bridge.nodes){
+      const actual=miniature.points.get(id);
+      if(!actual)continue;
+      const point=[x,z,-y,1];
+      const clip=[0,1,2,3].map(row=>point.reduce((sum,v,col)=>sum+v*m[4*col+row],0));
+      assert.ok(clip[3]>0&&Math.abs(clip[2])<clip[3]);
+      const px=[size[0]*(1+clip[0]/clip[3])/2,size[1]*(1-clip[1]/clip[3])/2];
+      const expected=project(pose,intrinsics,actual);
+      assert.ok(Math.hypot(expected[0]-px[0],expected[1]-px[1])<.0001);
+    }
+  }
 });

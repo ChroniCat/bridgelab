@@ -190,9 +190,10 @@ function processFrame(a,stamp){
   const metric=!!gate?.eligible,kind=metric?'metric':'pixel',above=metric?gate.exceeds:hit.offsetPx>7;
   a.alerts.delete(hit.sectionId+'|'+(metric?'pixel':'metric'));
   const alert=sustained(a,hit.sectionId,kind,above,t);
-  if(a.source!=='synthetic'&&models.model&&hit.baseline.modelBinding){
-    const projection=projectFieldModel(models.model,hit.baseline.modelBinding,hit,raw.width,raw.height);
-    if(projection){drawFieldModel(display,models.model,projection);schematicVisible=true}
+  if(a.source!=='synthetic'&&hit.baseline.modelBinding){
+    const binding=hit.baseline.modelBinding,model=models.forBinding(binding);
+    const projection=projectFieldModel(model,binding,hit,raw.width,raw.height);
+    if(projection){drawFieldModel(display,model,projection);schematicVisible=true}
   }
   drawOverlay(hit,alert.active);
   if(alert.active){if(metric)setState('Planar shift for review','平面位移待复核','alert');else setState('Image shift for review','图像偏移待复核','alert')}

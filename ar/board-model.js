@@ -12,21 +12,45 @@ export function placeBridge(bridge) {
   if(!members.length)throw Error('Missing bridge geometry');
   const used=[...new Set(members.flatMap(m=>[m.a,m.b]))];
   const xyz=used.map(id=>nodes.get(id));
-  const bounds=[0,1,2].map(k=>[Math.min(...xyz.map(p=>p[k])),Math.max(...xyz.map(p=>p[k]))]);
+  const bounds=bridge.displayBounds??[0,1,2].map(k=>[
+    Math.min(...xyz.map(p=>p[k])),Math.max(...xyz.map(p=>p[k]))
+  ]);
   const scale=.143/(bounds[0][1]-bounds[0][0]);
   if(!Number.isFinite(scale)||scale<=0)throw Error('Invalid bridge span');
-  // Set the miniature on an inclined display plane so its two trusses are
-  // distinguishable even when the phone looks straight at the board.
-  const tilt=.76,yaw=.16,c=Math.cos(tilt),s=Math.sin(tilt);
+  // Tilt the whole model toward the camera. Full mesh bounds include the footways and pier feet.
+  const tilt=bridge.kind==='visual-reconstruction'?1.21:.76;
+  const yaw=.16,c=Math.cos(tilt),s=Math.sin(tilt);
   const lift=.002+(bounds[1][1]-bounds[1][0])*.5*s*scale;
-  const points=new Map();
-  for(const id of used){
-    const p=nodes.get(id),x=scale*(p[0]-(bounds[0][0]+bounds[0][1])/2);
-    const y=scale*(p[1]-(bounds[1][0]+bounds[1][1])/2),z=scale*(p[2]-bounds[2][0]);
+  function place([x,y,z]){
+    x=scale*(x-(bounds[0][0]+bounds[0][1])/2);
+    y=scale*(y-(bounds[1][0]+bounds[1][1])/2);
+    z=scale*(z-bounds[2][0]);
     const v=y*c+z*s;
-    points.set(id,[.08+x*Math.cos(yaw)-v*Math.sin(yaw),-lift+y*s-z*c,.05+x*Math.sin(yaw)+v*Math.cos(yaw)]);
+    return [.08+x*Math.cos(yaw)-v*Math.sin(yaw),-lift+y*s-z*c,.05+x*Math.sin(yaw)+v*Math.cos(yaw)];
   }
-  return {points,members};
+  return {points:new Map(used.map(id=>[id,place(nodes.get(id))])),members,place};
+}
+
+// The same affine placement maps glTF's X-right, Y-up, Z-back into the board's
+// local frame. Compute clip coordinates with w = positive camera depth, just
+// like the pinhole projection used for the detected points.
+export function boardClipMatrix(miniature,pose,K,width,height){
+  const origin=miniature.place([0,0,0]);
+  const bases=[[1,0,0],[0,0,1],[0,-1,0]].map(p=>
+    miniature.place(p).map((v,i)=>v-origin[i]));
+  const near=.005,far=50;
+  const out=new Float32Array(16);
+  [...bases,origin].forEach((v,col)=>{
+    const translation=col===3;
+    const [x,y,z]=pose.R.map((row,i)=>row[0]*v[0]+row[1]*v[1]+row[2]*v[2]+(translation?pose.t[i]:0));
+    out.set([
+      2*K.fx/width*x+(2*K.cx/width-1)*z,
+      -2*K.fy/height*y+(1-2*K.cy/height)*z,
+      (far+near)/(far-near)*z-(translation?2*far*near/(far-near):0),
+      z
+    ],4*col);
+  });
+  return out;
 }
 
 export function drawMiniature(ctx,miniature,pose,K){

@@ -2,7 +2,7 @@ import {grayFrame,trackPoint,project} from './vision.js';
 import {registerFrame,captureReference,detectBoard} from './auto.js';
 import {replayModel,replaySize,replayK,replaySeeds,drawReplay} from './replay.js';
 import {compare,assessAlert,limitPx,tolerancePx} from './measure.js';
-import {placeBridge,drawMiniature,locateBoard} from './board-model.js';
+import {placeBridge,boardClipMatrix,drawMiniature,locateBoard} from './board-model.js';
 import {sketch} from '../models/viewer.js';
 import {drawBoardSample,boardSampleSize,boardSampleK} from './board-sample.js';
 
@@ -15,6 +15,7 @@ const sample=!replay&&query.get('mode')==='board-demo',hasCamera=!replay&&!sampl
 const status=el('status'),hint=el('hint');
 const choice=el('model-choice'),preview=el('model-preview'),previewToggle=el('preview-toggle');
 let selectedModel=null,miniature=null,viewer=null,modelRequest=0,loadingModel=false,currentBoard=null;
+let meshLayer=null;
 let storedBridge;try{storedBridge=localStorage.getItem('bridgelab.tabletop.bridge')}catch{}
 const safeBridge=id=>['waibaidu','training-span'].includes(id);
 const requested=query.get('bridge')||query.get('model');
@@ -90,8 +91,9 @@ function renderLanguage(){
   el('switch-label').textContent=(replay||sample)?text('Try live camera','试用相机'):text('Watch replay','观看回放');
   el('start').textContent=replay?text('Play replay','播放回放'):sample?text('Play sample','播放桌面示例'):text('Start camera','开启相机');
   if(!replay){
-    el('model-state').textContent=loadingModel?text('Loading schematic model…','正在加载示意模型…'):selectedModel?
-      text('Schematic model · '+selectedModel.lengthM+' m · scaled to the test board','示意模型 · '+selectedModel.lengthM+' 米 · 缩放至测试板'):
+    const kind=selectedModel?.kind==='visual-reconstruction'?text('Visual reconstruction','外观重建'):text('Schematic model','示意模型');
+    el('model-state').textContent=loadingModel?text('Loading model…','正在加载模型…'):selectedModel?
+      kind+' · '+selectedModel.lengthM+' m · '+text('scaled to the test board','缩放至测试板'):
       text('Bridge model unavailable.','桥梁模型未加载。');
     previewToggle.textContent=preview.hidden?text('View 3D model','查看三维模型'):text('Close preview','收起三维预览');
     viewer?.draw();
@@ -104,8 +106,21 @@ function updateLinks(){
   el('switch').href='?mode='+(replay||sample?'camera':'replay')+'&bridge='+id;
   el('sample-link').href='?mode=board-demo&bridge='+id;
 }
+async function prepareMesh(seq){
+  const canvas=document.createElement('canvas');
+  try{
+    const {loadBridgeRenderer}=await import('../models/mesh-renderer.js');
+    if(seq!==modelRequest)return;
+    const renderer=await loadBridgeRenderer(canvas);
+    if(seq!==modelRequest){renderer.destroy();return}
+    meshLayer={canvas,renderer};
+  }catch{
+    // The existing structural lines continue to work without a GPU renderer.
+  }
+}
 async function loadBridge(){
   const id=choice.value,seq=++modelRequest;
+  meshLayer?.renderer.destroy();meshLayer=null;
   selectedModel=null;miniature=null;viewer?.destroy();viewer=null;
   const can=el('preview-canvas');can.getContext('2d').clearRect(0,0,can.width,can.height);
   loadingModel=true;el('model-retry').hidden=true;updateLinks();renderLanguage();
@@ -115,6 +130,7 @@ async function loadBridge(){
     const data=await r.json();if(seq!==modelRequest)return;
     const prepared=placeBridge(data);
     viewer=sketch(can,data);miniature=prepared;selectedModel=data;
+    if(id==='waibaidu'&&data.kind==='visual-reconstruction')void prepareMesh(seq);
     if(session){session.displayModel=id;record('display-model',{id})}
   }catch{if(seq===modelRequest)el('model-retry').hidden=false}
   finally{if(seq===modelRequest){loadingModel=false;renderLanguage()}}
@@ -239,9 +255,27 @@ function observe(image,now) {
   currentBoard={found,fit};
   return fit;
 }
+function renderBoardBridge(result){
+  if(meshLayer){
+    const {canvas,renderer}=meshLayer;
+    try{
+      if(canvas.width!==view.width)canvas.width=view.width;
+      if(canvas.height!==view.height)canvas.height=view.height;
+      const matrix=boardClipMatrix(miniature,result.pose,result.K,canvas.width,canvas.height);
+      if(renderer.render(matrix)!==false){
+        ctx.drawImage(canvas,0,0);
+        return;
+      }
+    }catch{
+      // Fall back to the wire model if compositing fails during an active session.
+    }
+    renderer.destroy();meshLayer=null;
+  }
+  drawMiniature(ctx,miniature,result.pose,result.K);
+}
 function overlay(result,activeRows) {
   if(!replay){
-    if(result.pose&&miniature)drawMiniature(ctx,miniature,result.pose,result.K);
+    if(result.pose&&miniature)renderBoardBridge(result);
     for(const [id,[x,y]] of result.observed){
       ctx.strokeStyle=id==='TARGET'?'#dc9246':'#3e917e';ctx.lineWidth=1.6;
       ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.stroke();

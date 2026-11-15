@@ -50,9 +50,17 @@ export function intrinsics(width,height){
   const f=.95*Math.max(width,height);
   return {fx:f,fy:f,cx:width/2,cy:height/2};
 }
+function matchesBinding(model,binding){
+  return !!model&&!!binding&&binding.modelId===model.data.id&&binding.revision===(model.data.revision??1)&&binding.assetKey===(model.data.assetKey??null);
+}
+async function fetchBuiltin(file){
+  const response=await fetch(new URL('../models/'+file+'.json',import.meta.url));
+  if(!response.ok)throw Error('model-fetch');
+  return response.json();
+}
 export function projectFieldModel(model,binding,hit,width,height){
   const panel=model?.panels.get(binding?.panelId);
-  if(!panel||binding.modelId!==model.data.id||binding.revision!==(model.data.revision??1)||binding.assetKey!==(model.data.assetKey??null)||!hit?.ok||
+  if(!panel||!matchesBinding(model,binding)||!hit?.ok||
      !Array.isArray(hit.observed)||!Number.isFinite(hit.checkPx)||hit.checkPx>3)return null;
   const corners=binding.reverse?[panel.xyz[1],panel.xyz[0],panel.xyz[3],panel.xyz[2]]:panel.xyz;
   const K=intrinsics(width,height);
@@ -71,7 +79,7 @@ export function drawFieldModel(context,model,projection){
 export function fieldModels({updated}){
   const canvas=document.getElementById('field-preview-canvas'),panelSelect=document.getElementById('model-panel'),summary=document.getElementById('field-model-status');
   const text=(en,zh)=>window.BridgePrefs.text(en,zh);
-  let currentSite=null,model=null,loading=false,failed=false,token=0,viewer=null;
+  let currentSite=null,model=null,archived=null,loading=false,failed=false,token=0,viewer=null;
   function refresh(){
     document.getElementById('field-model-box').hidden=!currentSite;
     summary.textContent=loading?text('Loading model…','载入模型…'):failed?text('Could not load the model.','模型加载失败。'):model?
@@ -84,17 +92,31 @@ export function fieldModels({updated}){
     document.getElementById('picker-mode').querySelector('[value="model"]').disabled=!model?.panels.size;
     viewer?.draw();
   }
-  async function select(site){
-    if(currentSite===site)return;currentSite=site;const seq=++token;model=null;failed=false;loading=!!site&&(!!site.geometry||builtins.has(site.id));
-    viewer?.destroy();viewer=null;refresh();if(!loading)return;
+  async function loadArchive(seq){
     try{
-      let data=site.geometry;
-      if(!data){const response=await fetch(new URL('../models/'+site.id+'.json',import.meta.url));if(!response.ok)throw Error('fetch');data=await response.json()}
+      const data=await fetchBuiltin('waibaidu-v1');
+      if(seq===token)archived=readGeometry(data);
+    }catch{
+      // Section tracking and displacement readings work without the optional 3D overlay.
+    }
+  }
+  async function select(site){
+    if(currentSite===site)return;currentSite=site;const seq=++token;model=null;archived=null;failed=false;loading=!!site&&(!!site.geometry||builtins.has(site.id));
+    viewer?.destroy();viewer=null;refresh();if(!loading)return;
+    const needsArchive=site.id==='waibaidu'&&site.sections?.some(({modelBinding:b})=>
+      b?.modelId==='waibaidu'&&b.revision===1&&b.assetKey===null);
+    const pendingArchive=needsArchive?loadArchive(seq):null;
+    try{
+      const data=site.geometry??await fetchBuiltin(site.id);
       if(seq!==token)return;model=readGeometry(data);viewer=sketch(canvas,data);
     }catch{if(seq===token)failed=true}
     finally{if(seq===token){loading=false;refresh();updated?.()}}
+    await pendingArchive;
   }
-  return {select,refresh,get model(){return model},binding(){
+  return {select,refresh,get model(){return model},forBinding(binding){
+    if(matchesBinding(model,binding))return model;
+    return matchesBinding(archived,binding)?archived:null;
+  },binding(){
     if(!model?.panels.has(panelSelect.value))return null;
     return {modelId:model.data.id,revision:model.data.revision??1,assetKey:model.data.assetKey??null,panelId:panelSelect.value,reverse:document.getElementById('model-reverse').checked};
   },cornerIds(){const p=model?.panels.get(panelSelect.value);if(!p)return [];const ids=p.ids;
