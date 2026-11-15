@@ -22,19 +22,28 @@ const px=n=>Number(n).toLocaleString(window.BridgePrefs.language,{maximumFractio
 const meters=n=>Number.isFinite(n)?px(n)+' m':'—';
 const text=(id,value)=>{const el=get(id);if(el.textContent!==value)el.textContent=value};
 
-function refreshControls() {
+function refreshObservation() {
   const live=!!stream&&state==='live',locked=live&&lastResult?.ok;
   const measures=locked?(lastResult.measurements||[]):[];
   const largest=measures.reduce((a,b)=>!a||Math.abs(b.displacementPx)>Math.abs(a.displacementPx)?b:a,null);
   const alertNow=!!toast&&performance.now()<toast.until&&locked;
-  shell.dataset.capture=sessionMode;
-  get('observation').dataset.state=alertNow?'alert':locked?'tracked':live?'locating':state;
+  const observation=get('observation'),nextState=alertNow?'alert':locked?'tracked':live?'locating':state;
+  if(observation.dataset.state!==nextState)observation.dataset.state=nextState;
   const looking=field?t('Face a saved bridge section','对准已存基准的桥段'):t('Aim at the bridge model','对准电脑上的桥模');
   text('tracking-state',locked?(field?(lastResult?.modelAligned?t('Model aligned','模型已配准'):t('Section recognized','桥段已识别')):t('Model aligned','模型已对齐')):
     live?(lastGood?t('Reacquiring bridge','重新识别中'):looking):t('Inspection camera','巡检相机'));
   text('reading',largest?place(largest)+' · '+px(Math.abs(largest.displacementPx))+' px':'');
   text('guidance',live&&!locked?(field?t('Keep its fixed features in frame.','把桥段的固定特征拍入画面。'):
     t('Keep the coloured joints and nearby truss in view.','让彩色节点和周围桁架同时入镜。')):'');
+  const banner=get('alert-toast');
+  if(banner.hidden!==!alertNow)banner.hidden=!alertNow;
+  if(alertNow){text('alert-title',t('Displacement detected','检测到形变'));text('alert-detail',place(toast)+' · '+px(toast.maxPx)+' px')}
+}
+
+function refreshControls() {
+  refreshObservation();
+  const live=!!stream&&state==='live';
+  shell.dataset.capture=sessionMode;
   get('prompt').hidden=live||sessionMode==='finalizing';
   const info={
     off:[t('Camera is off','相机已关闭'),t('Open the rear camera to frame the bridge.','打开后置相机，对准桥梁。')],
@@ -57,9 +66,6 @@ function refreshControls() {
   get('mode-link').href=field?'./mobile.html?v=wb5':'./mobile.html?site=waibaidu&v=wb5';
   text('mode-link',field?t('Use the desktop model camera','切换到桌面模型相机'):t('Use a field baseline','切换到实桥巡检'));
   get('baseline-link').hidden=!field;get('baseline-link').href=fieldLink;
-  const banner=get('alert-toast');
-  banner.hidden=!alertNow;
-  if(alertNow){text('alert-title',t('Displacement detected','检测到形变'));text('alert-detail',place(toast)+' · '+px(toast.maxPx)+' px')}
 }
 
 function paintModel(ctx,w,h,now,film=false) {
@@ -104,7 +110,7 @@ function paintOverlay(now) {
 function scan(now) {
   const sw=video.videoWidth,sh=video.videoHeight,vw=shell.clientWidth,vh=shell.clientHeight;
   if(!sw||!sh||!vw||!vh||!tracker)return;
-  const crop=coverRect(sw,sh,vw,vh),factor=Math.min(1,1100/Math.max(crop[2],crop[3]));
+  const crop=coverRect(sw,sh,vw,vh),factor=Math.min(1,(tracker.maxFrameSide??1100)/Math.max(crop[2],crop[3]));
   const w=Math.max(2,Math.round(crop[2]*factor)),h=Math.max(2,Math.round(crop[3]*factor));
   if(sampled.width!==w||sampled.height!==h){sampled.width=w;sampled.height=h;tracker.reset?.()}
   input.drawImage(video,...crop,0,0,w,h);
@@ -120,7 +126,7 @@ function scan(now) {
   if(!result.ok)toast=null;
   if(events.length){const e=events.reduce((a,b)=>a.maxPx>b.maxPx?a:b);toast={...e,until:now+2900}}
   screenSize=[vw,vh];
-  paintOverlay(now);refreshControls();
+  paintOverlay(now);refreshObservation();
 }
 function tick(now) {
   if(!stream)return;
@@ -131,14 +137,14 @@ function tick(now) {
     }
     recording?.draw(now);
   }
-  if(toast&&now>=toast.until){toast=null;refreshControls();paintOverlay(now)}
+  if(toast&&now>=toast.until){toast=null;refreshObservation();paintOverlay(now)}
   const stamp=clock(sessionMode==='recording'?(now-started)/1000:0);
   if(displayTimer!==stamp){displayTimer=stamp;text('timer',stamp)}
   frameRequest=requestAnimationFrame(tick);
 }
 async function detector() {
   if(!loadingTracker)loadingTracker=(field?
-    import('./field-walk-tracker.js?v=wb5').then(m=>m.createFieldWalkTracker(site)):
+    import('./field-walk-tracker.js?v=wb7').then(m=>m.createFieldWalkTracker(site)):
     import('./walk-tracker.js?v=wb5').then(m=>m.createWalkTracker())
   ).catch(e=>{loadingTracker=null;throw e});
   return loadingTracker;

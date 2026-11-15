@@ -7,6 +7,8 @@ import {projectFieldModel,readGeometry} from '../field/model-overlay.js?v=wb3';
 import {loadBridgeGeometry} from '../models/bridge-assets.js?v=wb3';
 import {project} from '../ar/vision.js';
 
+const maxFrameSide=480;
+
 function referenceKey(binding) {
   return JSON.stringify([binding.modelId,binding.revision,binding.assetKey]);
 }
@@ -30,7 +32,7 @@ export async function createFieldWalkTracker(siteId) {
   const tracker=createTracker(),small=document.createElement('canvas'),source=document.createElement('canvas');
   const buffer=small.getContext('2d',{willReadFrequently:true}), src=source.getContext('2d');
   function observe(frame){
-    const scale=Math.min(1,480/Math.max(frame.width,frame.height));
+    const scale=Math.min(1,maxFrameSide/Math.max(frame.width,frame.height));
     const w=Math.max(1,Math.round(frame.width*scale)),h=Math.max(1,Math.round(frame.height*scale));
     let work=frame;
     if(w!==frame.width || h!==frame.height){
@@ -66,5 +68,5 @@ export async function createFieldWalkTracker(siteId) {
       displacementPx:Math.hypot(target[0]-x,target[1]-y),thresholdPx:7
     }]};
   }
-  return {observe,reset:()=>tracker.reset()};
+  return {observe,maxFrameSide,reset:()=>tracker.reset()};
 }

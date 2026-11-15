@@ -1,4 +1,4 @@
-import {loadWalkMesh} from '../models/mesh-renderer.js?v=wb5';
+import {loadWalkMesh} from '../models/mesh-renderer.js?v=walkperf1';
 import {fixedLandmarks,measurementLandmarks} from './walk-landmarks.js?v=wb5';
 
 export const walkRoute = Object.freeze({start:14,end:90.356,length:104.356,speed:2.15});
@@ -38,11 +38,17 @@ function displacementWeight(x,y,z) {
   return influence*across*(1-clamp((y-.3)/8.5,0,1));
 }
 
-// Long asphalt and footway faces in the static model need intermediate vertices
-// for a local displacement to follow the truss. Clip at panel quarter-stations.
+// Only triangles that cross a moving joint need intermediate vertices. An entire
+// face outside those panels stays planar, as do the upper chord and stable piers.
 function subdivideLongFaces(part) {
-  const pos=[],norm=[],inds=[],slice=steelSpacing/4;
-  const point=i=>[...part.positions.subarray(3*i,3*i+3),...part.normals.subarray(3*i,3*i+3)];
+  const slice = steelSpacing / 4;
+  const {positions, normals, indices} = part;
+  const extraPositions = [], extraNormals = [], splitIndices = [];
+  const firstNewVertex = positions.length / 3;
+  const point = i => [
+    positions[i], positions[i+1], positions[i+2],
+    normals[i], normals[i+1], normals[i+2]
+  ];
   function clip(poly,x,side) {
     if(!poly.length)return [];
     let a=poly.at(-1);const out=[];
@@ -53,29 +59,51 @@ function subdivideLongFaces(part) {
     }
     return out;
   }
-  function emit(poly) {
-    const base=pos.length/3;
-    for(const p of poly){pos.push(p[0],p[1],p[2]);norm.push(p[3],p[4],p[5]);}
-    for(let k=1;k+1<poly.length;k++)inds.push(base,base+k,base+k+1);
+
+  // Preserve the original tessellation rule for already fine material groups.
+  let needsSplit = false;
+  for (let i=0; i<indices.length; i+=3) {
+    const a=positions[3*indices[i]], b=positions[3*indices[i+1]], c=positions[3*indices[i+2]];
+    if (Math.max(a,b,c)-Math.min(a,b,c)>3*slice) { needsSplit=true; break; }
   }
-  // Retain the existing indexed mesh on already-finely-tessellated groups.
-  let needs=false;
-  for(let i=0;i<part.indices.length&&!needs;i+=3){
-    const xs=[0,1,2].map(k=>part.positions[3*part.indices[i+k]]);
-    needs=Math.max(...xs)-Math.min(...xs)>3*slice;
-  }
-  if(!needs)return {...part,positions:part.positions.slice()};
-  for(let i=0;i<part.indices.length;i+=3){
-    const tri=[point(part.indices[i]),point(part.indices[i+1]),point(part.indices[i+2])];
-    const xs=tri.map(p=>p[0]),lo=Math.min(...xs),hi=Math.max(...xs);
-    if(hi-lo<slice*1.2){emit(tri);continue;}
-    for(let k=Math.floor(lo/slice);k<=Math.floor(hi/slice);k++){
-      const poly=clip(clip(tri,k*slice,1),(k+1)*slice,-1);
-      if(poly.length>2)emit(poly);
+  let outputIndices = indices;
+  if (needsSplit) {
+    for (let i=0; i<indices.length; i+=3) {
+      const a=3*indices[i], b=3*indices[i+1], c=3*indices[i+2];
+      const lo=Math.min(positions[a],positions[b],positions[c]);
+      const hi=Math.max(positions[a],positions[b],positions[c]);
+      const inMovingPanel = hi-lo>=1.2*slice &&
+        Math.max(positions[a+1],positions[b+1],positions[c+1])>-1.47 &&
+        Math.min(positions[a+1],positions[b+1],positions[c+1])<8.8 &&
+        Math.max(positions[a+2],positions[b+2],positions[c+2])>-5.9 &&
+        measurementLandmarks.some(mark => hi>mark.xyz[0]-steelSpacing && lo<mark.xyz[0]+steelSpacing);
+      if (!inMovingPanel) {
+        splitIndices.push(indices[i],indices[i+1],indices[i+2]); continue;
+      }
+      const triangle=[point(a),point(b),point(c)];
+      for (let k=Math.floor(lo/slice); k<=Math.floor(hi/slice); k++) {
+        const poly=clip(clip(triangle,k*slice,1),(k+1)*slice,-1);
+        if (poly.length<3) continue;
+        const base=firstNewVertex+extraPositions.length/3;
+        for (const p of poly) {
+          extraPositions.push(p[0],p[1],p[2]); extraNormals.push(p[3],p[4],p[5]);
+        }
+        for (let j=1;j+1<poly.length;j++) splitIndices.push(base,base+j,base+j+1);
+      }
+    }
+    if (extraPositions.length) {
+      const Index = firstNewVertex+extraPositions.length/3>65535 ? Uint32Array : Uint16Array;
+      outputIndices = new Index(splitIndices);
     }
   }
-  const Index=pos.length/3>65535?Uint32Array:Uint16Array;
-  return {...part,positions:new Float32Array(pos),normals:new Float32Array(norm),indices:new Index(inds)};
+  // Each scene owns its mutable positions; model normals and unchanged indices are shared.
+  const shapedPositions = new Float32Array(positions.length+extraPositions.length);
+  shapedPositions.set(positions);
+  if (!extraPositions.length) return {...part,positions:shapedPositions};
+  shapedPositions.set(extraPositions,positions.length);
+  const shapedNormals=new Float32Array(normals.length+extraNormals.length);
+  shapedNormals.set(normals); shapedNormals.set(extraNormals,normals.length);
+  return {...part,positions:shapedPositions,normals:shapedNormals,indices:outputIndices};
 }
 
 function river(ctx,w,h,project) {

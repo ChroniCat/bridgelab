@@ -4,7 +4,10 @@
 .scene{border:1px solid var(--edge);border-radius:10px;overflow:hidden}.scene{margin:0;background:var(--surface)}
 .scene-top,.dialog-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.scene-top{padding:10px 15px;border-bottom:1px solid var(--edge)}
 .scene-top figcaption{font-size:14px;font-weight:600}.quiet{border:0;background:transparent;color:var(--muted);padding:4px 1px;font:inherit;font-size:13px;cursor:pointer}
-.canvas-wrap{position:relative;background:#f3f2ed}#board{width:100%;height:auto}.loading{position:absolute;inset:0;display:grid;place-content:center;font-size:14px;color:#394e53}.loading[hidden]{display:none}
+.canvas-wrap{position:relative;background:#f3f2ed}#board{display:block;width:100%;height:auto}
+#walk-preview{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.loading{position:absolute;left:10px;bottom:10px;padding:3px 8px;background:#f7faf9ed;border-radius:4px;font-size:13px;color:#394e53}
+.loading[hidden],#walk-preview[hidden]{display:none}
 .experiment-controls h2,dialog h2{font-size:clamp(16px,1.5vw,20px);font-weight:640;line-height:1.4}.experiment-controls p,dialog p{color:var(--muted);font-size:14px;line-height:1.5}
 body button.button{font-family:inherit;color:var(--text);cursor:pointer}body button.button.primary{color:white}button:disabled{opacity:.48;cursor:wait}
 .control-group .button,.phone-group .button{width:100%}.control-group .help{margin-top:7px;font-size:12px}.phone-group{margin-top:21px;padding-top:16px;border-top:1px solid var(--edge)}.phone-group p{margin:6px 0 10px}

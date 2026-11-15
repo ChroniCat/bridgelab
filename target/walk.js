@@ -1,9 +1,10 @@
-import {createWalkScene,homeCamera,walkRoute} from './walk-scene.js?v=wb5';
+import {createWalkScene,homeCamera,walkRoute} from './walk-scene.js?v=walkperf1';
 
 const get=id=>document.getElementById(id);
 const {text}=window.BridgePrefs;
 const canvas=get('board'),view=get('board-view'),play=get('walk-play'),slider=get('walk-position');
 const expand=get('expand-board'),dialog=get('pair-dialog'),phone=get('phone-camera'),link=get('pair-url'),code=get('pair-code');
+const preview=get('walk-preview'), loading=get('loading'), distance=get('walk-distance');
 const camera={...homeCamera};
 const total=walkRoute.end-walkRoute.start;
 let scene,playing=false,expanded=false,copied=false,timer,failed=false,lastTime=0,raf=0;
@@ -27,8 +28,14 @@ function render(now) {
   // Ease each state change. Pausing the walk keeps the camera fixed.
   shownLevel+=Math.sign(level-shownLevel)*Math.min(Math.abs(level-shownLevel),dt*.42);
   const d=camera.station-walkRoute.start;
-  slider.value=String(d);get('walk-distance').textContent=d.toFixed(1)+' / '+total.toFixed(1)+' m';
+  slider.value=String(d);
+  const reading=d.toFixed(1)+' / '+total.toFixed(1)+' m';
+  if(distance.textContent!==reading)distance.textContent=reading;
   scene.draw(camera,shownLevel);
+  if(!preview.hidden){
+    preview.hidden=true;loading.hidden=true;
+    play.disabled=slider.disabled=false;
+  }
   if(playing||shownLevel!==level)requestDraw();else lastTime=0;
 }
 play.addEventListener('click',()=>{
@@ -66,6 +73,9 @@ expand.addEventListener('click',()=>setExpanded(!expanded));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&expanded)setExpanded(false);});
 document.addEventListener('visibilitychange',()=>{lastTime=0;});
 function openPhoneLink() {
+  if(code.dataset.src && !code.hasAttribute('src')){
+    code.src=code.dataset.src;code.hidden=false;
+  }
   copied = false;
   labels();
   if (dialog.showModal) dialog.showModal();
@@ -95,12 +105,11 @@ async function start(){
   link.value=phone.href;
   const address=new URL(phone.href);
   if(address.origin==='https://chronicat.github.io'&&address.pathname==='/bridgelab/target/mobile.html'){
-    code.src=code.dataset.src||'./phone-bridge-walk-wb5.png';code.hidden=false;
+    code.dataset.src='./phone-bridge-walk-wb5.png';
   }
   try{
     scene=await createWalkScene(canvas);
-    slider.max=String(total);play.disabled=slider.disabled=false;
-    get('loading').hidden=true;
+    slider.max=String(total);
     labels();requestDraw();
   }catch{failed=true;labels();}
 }

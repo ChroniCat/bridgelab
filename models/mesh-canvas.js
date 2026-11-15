@@ -55,12 +55,34 @@ export function canvasMesh(primitives) {
         if (Math.abs(det)<.01) continue;
         const x0=Math.max(0,Math.ceil(Math.min(ax,bx,cx)-.5)), x1=Math.min(w-1,Math.floor(Math.max(ax,bx,cx)-.5));
         const y0=Math.max(0,Math.ceil(Math.min(ay,by,cy)-.5)), y1=Math.min(h-1,Math.floor(Math.max(ay,by,cy)-.5));
+        if (x1<x0 || y1<y0) continue;
         const du=dy2/det, dv=-dy1/det, lineU=-dx2/det, lineV=dx1/det;
         const firstU=du*(x0+.5-ax)+lineU*(y0+.5-ay), firstV=dv*(x0+.5-ax)+lineV*(y0+.5-ay);
         const color=faces[i/3], dz1=bz-az, dz2=cz-az;
+        // Wide diagonal truss members cover very little of their bounding box.
+        // Limit each scanline to the triangle's span before testing pixel centres.
+        const scanEdges = x1-x0>8 && y1-y0>4;
+        let tx=ax,ty=ay,mx=bx,my=by,lx=cx,ly=cy;
+        let longSlope=0, upperSlope=0, lowerSlope=0;
+        if (scanEdges) {
+          if (ty>my) { [ty,my]=[my,ty]; [tx,mx]=[mx,tx]; }
+          if (my>ly) { [my,ly]=[ly,my]; [mx,lx]=[lx,mx]; }
+          if (ty>my) { [ty,my]=[my,ty]; [tx,mx]=[mx,tx]; }
+          longSlope=(lx-tx)/(ly-ty);
+          upperSlope=my===ty?0:(mx-tx)/(my-ty);
+          lowerSlope=ly===my?0:(lx-mx)/(ly-my);
+        }
         for (let y=y0; y<=y1; y++) {
-          let u=firstU+(y-y0)*lineU, v=firstV+(y-y0)*lineV, p=y*w+x0;
-          for (let x=x0; x<=x1; x++,p++,u+=du,v+=dv) {
+          let left=x0,right=x1;
+          if (scanEdges) {
+            const center=y+.5, e0=tx+(center-ty)*longSlope;
+            const e1=center<my ? tx+(center-ty)*upperSlope : mx+(center-my)*lowerSlope;
+            // Round outward so edge pixels use precisely the original inclusion test.
+            left=Math.max(x0,Math.floor(Math.min(e0,e1)-.5));
+            right=Math.min(x1,Math.ceil(Math.max(e0,e1)-.5));
+          }
+          let u=firstU+(y-y0)*lineU+(left-x0)*du, v=firstV+(y-y0)*lineV+(left-x0)*dv;
+          for (let x=left,p=y*w+left; x<=right; x++,p++,u+=du,v+=dv) {
             if (u<0 || v<0 || u+v>1) continue;
             const z=az+u*dz1+v*dz2;
             if (z<depth[p] && z>=-1 && z<=1) { depth[p]=z; colors[p]=color; }

@@ -1,4 +1,4 @@
-import {canvasMesh,bridgePreviewPrimitives} from './mesh-canvas.js?v=wb3';
+import {canvasMesh,bridgePreviewPrimitives} from './mesh-canvas.js?v=walkperf1';
 
 // Mesh renderer for BridgeLab's own static, untextured GLB. The companion
 // registration JSON and this mesh share an origin. glTF uses Y up.
