@@ -1,4 +1,4 @@
-import {loadBridgeRenderer} from './mesh-renderer.js';
+import {loadBridgeRenderer} from './mesh-renderer.js?v=wb3';
 
 export function sketch(canvas,model){
  const ctx=canvas.getContext('2d');
@@ -9,15 +9,12 @@ export function sketch(canvas,model){
  const centre=bounds.map(([a,b])=>(a+b)/2),dims=bounds.map(([a,b])=>b-a),span=Math.max(...dims,.001);
  const points=nodes.map(n=>n.xyz.map((x,k)=>(x-centre[k])/span));
  const isBoard=model.id==='ar-test-board';
- const detailed = model.id==='waibaidu' && model.revision===2 && !model.assetKey;
- const originYaw = detailed ? .34 : isBoard ? -.19 : -.66;
+ const detailed = model.id==='waibaidu' && model.revision===3 && !model.assetKey;
+ const originYaw = detailed ? -.34 : isBoard ? -.19 : -.66;
  const originPitch = detailed ? .20 : isBoard ? .13 : .53;
- let gpu=null,disposed=false,zoom=1;
+ let zoom=1;
  const surface=detailed?document.createElement('canvas'):null;
- if(detailed) loadBridgeRenderer(surface).then(renderer=>{
-   if(disposed) renderer.destroy();
-   else {gpu=renderer;draw()}
- }).catch(()=>{}); // Keep the rotatable joint model on devices without WebGL.
+ const renderer=detailed?loadBridgeRenderer(surface,model,draw):null;
  let yaw=originYaw,pitch=originPitch,drag=null;
  function draw(){
   if(!canvas.isConnected)return;
@@ -45,7 +42,7 @@ export function sketch(canvas,model){
     ctx.moveTo(...xyz(a).slice(0,2));ctx.lineTo(...xyz(b).slice(0,2))
    }ctx.stroke();
   }
-  if(gpu) {
+  if(renderer) {
    // Map a glTF point to the same orthographic view as the field-model joints.
    if(surface.width!==cw||surface.height!==ch){surface.width=cw;surface.height=ch}
    function clip(x,y,z) {
@@ -57,7 +54,11 @@ export function sketch(canvas,model){
    const column=p=>p.map((v,i)=>v-o[i]);
    const matrix=new Float32Array([...column(clip(1,0,0)),0,...column(clip(0,1,0)),0,
      ...column(clip(0,0,1)),0,...o,1]);
-   if(gpu.render(matrix)){ctx.drawImage(surface,0,0,w,h);return}
+   if(renderer.render(matrix)){
+     canvas.dataset.renderMode=renderer.mode;
+     ctx.drawImage(renderer.source,0,0,w,h);
+   }
+   return;
   }
   const budget=Math.max(1,Math.ceil(edges.length/5500));
   const visible=edges.filter((_,i)=>i%budget===0).sort(([a,b],[c,d])=>projected[c][2]+projected[d][2]-projected[a][2]-projected[b][2]);
@@ -94,5 +95,5 @@ export function sketch(canvas,model){
  function magnify(factor){zoom=Math.max(.65,Math.min(3.2,zoom*factor));draw()}
  canvas.onkeydown=e=>{const axes={ArrowLeft:[-.12,0],ArrowRight:[.12,0],ArrowUp:[0,-.1],ArrowDown:[0,.1]};
   if(e.key==='Home'){e.preventDefault();reset();return}if(!axes[e.key])return;e.preventDefault();yaw+=axes[e.key][0];pitch=Math.max(-1.38,Math.min(1.38,pitch+axes[e.key][1]));draw()};
- draw();return {reset,draw,setView,magnify,destroy(){disposed=true;gpu?.destroy();resize.disconnect();canvas.onpointerdown=canvas.onpointermove=canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=canvas.onkeydown=null}}
+ draw();return {reset,draw,setView,magnify,destroy(){renderer?.destroy();resize.disconnect();canvas.onpointerdown=canvas.onpointermove=canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=canvas.onkeydown=null}}
 }

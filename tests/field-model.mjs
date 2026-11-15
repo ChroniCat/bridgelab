@@ -49,7 +49,8 @@ test('mixed saved sections resolve their exact geometry and late archive loads r
     t.after(()=>original?Object.defineProperty(globalThis,name,original):delete globalThis[name]);
   }
   const oldBinding={modelId:'waibaidu',revision:1,panelId:'N2',assetKey:null,reverse:false};
-  const newBinding={...oldBinding,revision:2};
+  const middleBinding={...oldBinding,revision:2};
+  const newBinding={...oldBinding,revision:3};
   const models=fieldModels({});
   const calls=[];
   let waitForArchive=null;
@@ -62,14 +63,15 @@ test('mixed saved sections resolve their exact geometry and late archive loads r
   });
 
   await models.select({id:'waibaidu',sections:[{modelBinding:newBinding}]});
-  assert.deepEqual(calls,['waibaidu']);
+  assert.deepEqual(calls,['waibaidu-r3']);
   assert.equal(models.forBinding(newBinding),models.model);
   assert.equal(models.forBinding(oldBinding),null);
 
-  const mixed={id:'waibaidu',sections:[{modelBinding:oldBinding},{modelBinding:newBinding}]};
+  const mixed={id:'waibaidu',sections:[{modelBinding:oldBinding},{modelBinding:middleBinding},{modelBinding:newBinding}]};
   await models.select(mixed);
   const archived=models.forBinding(oldBinding);
-  assert.equal(models.binding().revision,2);
+  assert.equal(models.binding().revision,3);
+  assert.equal(models.forBinding(middleBinding).data.revision,2);
   assert.deepEqual(archived.panels.get('N2').xyz,readGeometry(file('waibaidu-v1')).panels.get('N2').xyz);
   assert.notDeepEqual(archived.panels.get('N2').xyz,models.model.panels.get('N2').xyz);
   assert.equal(models.forBinding(newBinding),models.model);

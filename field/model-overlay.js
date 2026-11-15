@@ -1,7 +1,8 @@
 // Visual registration of a selected model panel. No projected model edge is
 // used as an observation when computing a displacement.
 import {fitPose,project} from '../ar/vision.js';
-import {sketch} from '../models/viewer.js';
+import {sketch} from '../models/viewer.js?v=wb3';
+import {loadBridgeGeometry} from '../models/bridge-assets.js?v=wb3';
 
 const builtins=new Set(['training-span','waibaidu']);
 const finitePoint=p=>Array.isArray(p)&&p.length===3&&p.every(Number.isFinite);
@@ -53,11 +54,6 @@ export function intrinsics(width,height){
 function matchesBinding(model,binding){
   return !!model&&!!binding&&binding.modelId===model.data.id&&binding.revision===(model.data.revision??1)&&binding.assetKey===(model.data.assetKey??null);
 }
-async function fetchBuiltin(file){
-  const response=await fetch(new URL('../models/'+file+'.json',import.meta.url));
-  if(!response.ok)throw Error('model-fetch');
-  return response.json();
-}
 export function projectFieldModel(model,binding,hit,width,height){
   const panel=model?.panels.get(binding?.panelId);
   if(!panel||!matchesBinding(model,binding)||!hit?.ok||
@@ -79,7 +75,7 @@ export function drawFieldModel(context,model,projection){
 export function fieldModels({updated}){
   const canvas=document.getElementById('field-preview-canvas'),panelSelect=document.getElementById('model-panel'),summary=document.getElementById('field-model-status');
   const text=(en,zh)=>window.BridgePrefs.text(en,zh);
-  let currentSite=null,model=null,archived=null,loading=false,failed=false,token=0,viewer=null;
+  let currentSite=null,model=null,archived=new Map(),loading=false,failed=false,token=0,viewer=null;
   function refresh(){
     document.getElementById('field-model-box').hidden=!currentSite;
     summary.textContent=loading?text('Loading model…','载入模型…'):failed?text('Could not load the model.','模型加载失败。'):model?
@@ -92,22 +88,23 @@ export function fieldModels({updated}){
     document.getElementById('picker-mode').querySelector('[value="model"]').disabled=!model?.panels.size;
     viewer?.draw();
   }
-  async function loadArchive(seq){
+  async function loadArchive(seq,revision){
     try{
-      const data=await fetchBuiltin('waibaidu-v1');
-      if(seq===token)archived=readGeometry(data);
+      const data=await loadBridgeGeometry('waibaidu',revision);
+      if(seq===token)archived.set(revision,readGeometry(data));
     }catch{
       // Section tracking and displacement readings work without the optional 3D overlay.
     }
   }
   async function select(site){
-    if(currentSite===site)return;currentSite=site;const seq=++token;model=null;archived=null;failed=false;loading=!!site&&(!!site.geometry||builtins.has(site.id));
+    if(currentSite===site)return;currentSite=site;const seq=++token;model=null;archived=new Map();failed=false;loading=!!site&&(!!site.geometry||builtins.has(site.id));
     viewer?.destroy();viewer=null;refresh();if(!loading)return;
-    const needsArchive=site.id==='waibaidu'&&site.sections?.some(({modelBinding:b})=>
-      b?.modelId==='waibaidu'&&b.revision===1&&b.assetKey===null);
-    const pendingArchive=needsArchive?loadArchive(seq):null;
+    const revisions=new Set((site.sections||[]).map(section=>section.modelBinding)
+      .filter(b=>site.id==='waibaidu' && b?.modelId==='waibaidu' && b.assetKey===null && [1,2].includes(b.revision))
+      .map(b=>b.revision));
+    const pendingArchive=Promise.all([...revisions].map(revision=>loadArchive(seq,revision)));
     try{
-      const data=site.geometry??await fetchBuiltin(site.id);
+      const data=site.geometry??await loadBridgeGeometry(site.id);
       if(seq!==token)return;model=readGeometry(data);viewer=sketch(canvas,data);
     }catch{if(seq===token)failed=true}
     finally{if(seq===token){loading=false;refresh();updated?.()}}
@@ -115,7 +112,8 @@ export function fieldModels({updated}){
   }
   return {select,refresh,get model(){return model},forBinding(binding){
     if(matchesBinding(model,binding))return model;
-    return matchesBinding(archived,binding)?archived:null;
+    const prior=archived.get(binding?.revision);
+    return matchesBinding(prior,binding)?prior:null;
   },binding(){
     if(!model?.panels.has(panelSelect.value))return null;
     return {modelId:model.data.id,revision:model.data.revision??1,assetKey:model.data.assetKey??null,panelId:panelSelect.value,reverse:document.getElementById('model-reverse').checked};

@@ -1,6 +1,8 @@
-// GPU renderer for BridgeLab's own static, untextured GLB. The companion
+import {canvasMesh,bridgePreviewPrimitives} from './mesh-canvas.js?v=wb3';
+
+// Mesh renderer for BridgeLab's own static, untextured GLB. The companion
 // registration JSON and this mesh share an origin. glTF uses Y up.
-const meshURL = new URL('./waibaidu.glb', import.meta.url);
+const meshURL = new URL('./waibaidu.glb?v=wb3', import.meta.url);
 let meshRequest;
 
 async function readMesh() {
@@ -19,6 +21,8 @@ async function readMesh() {
     throw new Error('Expected binary glTF 2.0');
   const jsonSize = head.getUint32(12, true);
   const model = JSON.parse(new TextDecoder().decode(new Uint8Array(bytes, 20, jsonSize)));
+  if (model.asset?.extras?.revision !== 3)
+    throw new Error('Bridge mesh revision does not match the current reconstruction');
   const binaryStart = 20 + jsonSize + 8;
   function attribute(index) {
     const accessor = model.accessors[index], view = model.bufferViews[accessor.bufferView];
@@ -55,9 +59,7 @@ const fragmentShader = `
     gl_FragColor = vec4(pow(lit, vec3(1.0/2.2)), 1.0);
   }`;
 
-export async function loadBridgeRenderer(canvas) {
-  meshRequest ??= readMesh().catch(error => { meshRequest = undefined; throw error; });
-  const primitives = await meshRequest;
+function gpuMesh(canvas,primitives) {
   const gl = canvas.getContext('webgl', {alpha:true, antialias:true, premultipliedAlpha:true});
   if (!gl) throw new Error('WebGL unavailable');
   const shaders = [], buffers = [];
@@ -114,4 +116,37 @@ export async function loadBridgeRenderer(canvas) {
       return true;
     }};
   } catch (error) { destroy(); throw error; }
+}
+
+
+// Draw a solid version immediately. Loading the high-detail file upgrades the
+// same canvas and projection; a failed request leaves the structural preview available.
+export function loadBridgeRenderer(canvas, model, onUpgrade) {
+  const preview = canvasMesh(bridgePreviewPrimitives(model));
+  let active = preview, gpu = null, disposed = false, fullMesh;
+  meshRequest ??= readMesh().catch(error => {meshRequest=undefined;throw error});
+  meshRequest.then(primitives => {
+    if(disposed)return;
+    fullMesh=primitives;
+    try { gpu=gpuMesh(canvas,primitives); active=gpu; }
+    catch { active=canvasMesh(primitives); }
+    onUpgrade?.();
+  }).catch(()=>{}); // An unavailable GLB leaves an independently usable preview.
+  return {
+    get source(){return gpu && active===gpu ? canvas : active.source},
+    get mode(){return gpu && active===gpu ? 'webgl' : active===preview ? 'simplified' : 'software'},
+    render(matrix){
+      if(active===gpu && !gpu.render(matrix)){
+        gpu.destroy();gpu=null;
+        active=canvasMesh(fullMesh);
+      }else if(active===gpu){return true}
+      return active.render(matrix,canvas.width,canvas.height);
+    },
+    destroy(){
+      disposed=true;
+      if(active!==preview)active.destroy();
+      preview.destroy();
+      fullMesh=null;
+    }
+  };
 }
